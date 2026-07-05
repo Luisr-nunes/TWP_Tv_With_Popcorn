@@ -179,7 +179,7 @@ public class MainController {
                             String posterPath = item.path("poster_path").asText("");
                             
                             if (!posterPath.isEmpty() && !posterPath.equals("null")) {
-                                VBox card = createShowCard(id, title, mediaType, posterPath, "", false, "[]");
+                                VBox card = createShowCard(id, title, mediaType, posterPath, "", false, "[]", 0);
                                 recommendationsBox.getChildren().add(card);
                             }
                         }
@@ -217,7 +217,7 @@ public class MainController {
     @FXML
     private void openHeroDetails() {
         if (heroTmdbId != null) {
-            openDetails(heroTmdbId, heroType, false, "[]");
+            openDetails(heroTmdbId, heroType, false, "[]", 0);
         }
     }
 
@@ -269,7 +269,7 @@ public class MainController {
                         String id = item.path("id").asText();
 
                         if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
-                            VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, "[]");
+                            VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, "[]", 0);
                             resultsPane.getChildren().add(card);
                         }
                     }
@@ -303,7 +303,10 @@ public class MainController {
                         JsonNode watchedNode = item.path("watched_episodes");
                         String watchedEpisodes = watchedNode.isMissingNode() ? "[]" : watchedNode.toString();
                         
-                        VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, watchedEpisodes);
+                        JsonNode ratingNode = item.path("user_rating");
+                        int userRating = ratingNode.isMissingNode() || ratingNode.isNull() ? 0 : ratingNode.asInt();
+                        
+                        VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, watchedEpisodes, userRating);
                         libraryPane.getChildren().add(card);
                     }
                 }
@@ -313,7 +316,7 @@ public class MainController {
         }, Platform::runLater);
     }
 
-    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, String watchedEpisodes) {
+    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, String watchedEpisodes, int userRating) {
         VBox card = new VBox(5);
         card.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-min-width: 150px;");
         card.getStyleClass().add("card-hover");
@@ -341,14 +344,14 @@ public class MainController {
         card.getChildren().addAll(imageView, titleLabel, typeLabel);
 
         card.setOnMouseClicked(e -> {
-            openDetails(tmdbId, type, inLibrary, watchedEpisodes);
+            openDetails(tmdbId, type, inLibrary, watchedEpisodes, userRating);
         });
 
         return card;
     }
 
-    private void openDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodes) {
-        detailsController.loadDetails(tmdbId, type, inLibrary, watchedEpisodes);
+    private void openDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodes, int userRating) {
+        detailsController.loadDetails(tmdbId, type, inLibrary, watchedEpisodes, userRating);
         details.setVisible(true);
     }
 }

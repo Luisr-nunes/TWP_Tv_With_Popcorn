@@ -154,4 +154,38 @@ public class SupabaseClient {
         }
         return true;
     }
+
+    public boolean removeShowFromLibrary(String tmdbId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + "/rest/v1/user_shows?user_id=eq." + Session.userId + "&tmdb_id=eq." + tmdbId))
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + Session.accessToken)
+                .DELETE()
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 204 && response.statusCode() != 200) {
+            throw new Exception("Falha ao remover show: HTTP " + response.statusCode());
+        }
+        return true;
+    }
+
+    public boolean updateRating(String tmdbId, int rating) throws Exception {
+        String jsonBody = String.format("{\"user_rating\": %d}", rating);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + "/rest/v1/user_shows?user_id=eq." + Session.userId + "&tmdb_id=eq." + tmdbId))
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + Session.accessToken)
+                .header("Content-Type", "application/json")
+                .header("Prefer", "return=minimal")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 204 && response.statusCode() != 200) {
+            throw new Exception("Falha ao atualizar nota: HTTP " + response.statusCode());
+        }
+        return true;
+    }
 }

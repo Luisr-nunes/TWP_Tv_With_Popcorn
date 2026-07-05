@@ -54,6 +54,12 @@
                 <VBox fx:id="episodesBox" spacing="10" alignment="CENTER_LEFT" maxWidth="800" style="-fx-background-color: #151518; -fx-padding: 20px; -fx-background-radius: 12px;" />
             </VBox>
 
+            <!-- Rating Section (Only in Library) -->
+            <VBox fx:id="ratingSection" alignment="CENTER" spacing="15" style="-fx-padding: 0 50px 50px 50px;" visible="false" managed="false">
+                <Label text="Minha Avaliação" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
+                <HBox fx:id="starsBox" spacing="10" alignment="CENTER" />
+            </VBox>
+
             <!-- Footer Section -->
             <HBox spacing="50" style="-fx-padding: 50px; -fx-background-color: #121215;">
                 <VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="300">

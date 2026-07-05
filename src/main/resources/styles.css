@@ -124,6 +124,20 @@
     -fx-text-fill: white;
 }
 
+.star {
+    -fx-font-size: 40px;
+    -fx-text-fill: #444444;
+    -fx-cursor: hand;
+}
+.star-filled {
+    -fx-font-size: 40px;
+    -fx-text-fill: #FFD54F;
+    -fx-cursor: hand;
+}
+.star:hover, .star-filled:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 213, 79, 0.5), 10, 0, 0, 0);
+}
+
 .glass-input {
     -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-text-fill: white;

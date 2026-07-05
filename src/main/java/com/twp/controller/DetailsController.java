@@ -32,6 +32,8 @@ public class DetailsController {
     @FXML private VBox episodesSection;
     @FXML private ComboBox<String> seasonCombo;
     @FXML private VBox episodesBox;
+    @FXML private VBox ratingSection;
+    @FXML private HBox starsBox;
     @FXML private VBox castBox;
     @FXML private HBox providersBox;
 
@@ -45,10 +47,12 @@ public class DetailsController {
     private String currentTitle;
     private String currentPosterPath;
     private Set<Integer> watchedEpisodes = new HashSet<>();
+    private int currentRating = 0;
 
-    public void loadDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodesJson) {
+    public void loadDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodesJson, int userRating) {
         this.currentTmdbId = tmdbId;
         this.currentType = type;
+        this.currentRating = userRating;
         
         // Parse watched episodes
         this.watchedEpisodes.clear();
@@ -79,8 +83,17 @@ public class DetailsController {
         backdropImage.fitWidthProperty().bind(rootPane.widthProperty());
 
         if (inLibrary) {
-            addBtn.setVisible(false);
-            addBtn.setManaged(false);
+            addBtn.setVisible(true);
+            addBtn.setManaged(true);
+            addBtn.setText("Remover da Biblioteca");
+            addBtn.getStyleClass().remove("primary-btn");
+            addBtn.getStyleClass().add("secondary-btn");
+            addBtn.setOnAction(e -> handleRemove());
+            
+            ratingSection.setVisible(true);
+            ratingSection.setManaged(true);
+            renderStars(userRating);
+
             if (type.equals("tv")) {
                 episodesSection.setVisible(true);
                 episodesSection.setManaged(true);
@@ -92,7 +105,13 @@ public class DetailsController {
             addBtn.setVisible(true);
             addBtn.setManaged(true);
             addBtn.setText("Adicionar à Minha Lista");
+            addBtn.getStyleClass().remove("secondary-btn");
+            addBtn.getStyleClass().add("primary-btn");
             addBtn.setDisable(false);
+            addBtn.setOnAction(e -> handleAdd());
+            
+            ratingSection.setVisible(false);
+            ratingSection.setManaged(false);
             episodesSection.setVisible(false);
             episodesSection.setManaged(false);
         }
@@ -275,6 +294,49 @@ public class DetailsController {
                 addBtn.setDisable(false);
             }
         }, Platform::runLater);
+    }
+
+    private void handleRemove() {
+        addBtn.setDisable(true);
+        addBtn.setText("Removendo...");
+        AsyncManager.runAsync(() -> {
+            return supabaseClient.removeShowFromLibrary(currentTmdbId);
+        }).thenAcceptAsync(success -> {
+            if (success) {
+                addBtn.setText("Removido!");
+                // Idealmente deveríamos atualizar a UI principal também, mas fechar a janela já basta por agora
+            } else {
+                addBtn.setText("Erro ao remover.");
+                addBtn.setDisable(false);
+            }
+        }, Platform::runLater);
+    }
+    
+    private void renderStars(int rating) {
+        starsBox.getChildren().clear();
+        for (int i = 1; i <= 5; i++) {
+            Label star = new Label("★");
+            star.getStyleClass().add(i <= rating ? "star-filled" : "star");
+            int starValue = i;
+            
+            star.setOnMouseClicked(e -> {
+                handleRatingChange(starValue);
+            });
+            
+            starsBox.getChildren().add(star);
+        }
+    }
+    
+    private void handleRatingChange(int newRating) {
+        currentRating = newRating;
+        renderStars(newRating);
+        
+        AsyncManager.runAsync(() -> {
+            return supabaseClient.updateRating(currentTmdbId, newRating);
+        }).exceptionally(e -> {
+            System.err.println("Erro ao salvar nota: " + e.getMessage());
+            return null;
+        });
     }
 
     @FXML
