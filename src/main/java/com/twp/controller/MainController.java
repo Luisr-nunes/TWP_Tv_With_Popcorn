@@ -12,6 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.scene.layout.VBox;
+import com.twp.util.AsyncManager;
 
 public class MainController {
     @FXML private TextField searchField;
@@ -62,37 +64,34 @@ public class MainController {
         loadingLabel.setStyle("-fx-text-fill: white;");
         libraryPane.getChildren().add(loadingLabel);
 
-        new Thread(() -> {
-            try {
-                String json = supabaseClient.getUserLibrary();
-                JsonNode root = mapper.readTree(json);
-
-                Platform.runLater(() -> {
-                    libraryPane.getChildren().clear();
-                    if (root.isArray() && root.size() > 0) {
-                        for (JsonNode item : root) {
-                            String title = item.path("title").asText();
-                            String type = item.path("media_type").asText();
-                            String poster = item.path("poster_path").asText("");
-                            
-                            VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true);
-                            libraryPane.getChildren().add(card);
-                        }
-                    } else {
-                        Label emptyLabel = new Label("Sua biblioteca está vazia. Vá em Buscar para adicionar!");
-                        emptyLabel.setStyle("-fx-text-fill: #888;");
-                        libraryPane.getChildren().add(emptyLabel);
-                    }
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    libraryPane.getChildren().clear();
-                    Label err = new Label("Erro ao carregar: " + e.getMessage());
-                    err.setStyle("-fx-text-fill: #E53935;");
-                    libraryPane.getChildren().add(err);
-                });
+        AsyncManager.runAsync(() -> {
+            String json = supabaseClient.getUserLibrary();
+            return mapper.readTree(json);
+        }).thenAcceptAsync(root -> {
+            libraryPane.getChildren().clear();
+            if (root.isArray() && root.size() > 0) {
+                for (JsonNode item : root) {
+                    String title = item.path("title").asText();
+                    String type = item.path("media_type").asText();
+                    String poster = item.path("poster_path").asText("");
+                    
+                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true);
+                    libraryPane.getChildren().add(card);
+                }
+            } else {
+                Label emptyLabel = new Label("Sua biblioteca está vazia. Vá em Buscar para adicionar!");
+                emptyLabel.setStyle("-fx-text-fill: #888;");
+                libraryPane.getChildren().add(emptyLabel);
             }
-        }).start();
+        }, Platform::runLater).exceptionally(e -> {
+            Platform.runLater(() -> {
+                libraryPane.getChildren().clear();
+                Label err = new Label("Erro ao carregar: " + e.getMessage());
+                err.setStyle("-fx-text-fill: #E53935;");
+                libraryPane.getChildren().add(err);
+            });
+            return null;
+        });
     }
 
     @FXML
@@ -105,38 +104,35 @@ public class MainController {
         loadingLabel.setStyle("-fx-text-fill: white;");
         resultsPane.getChildren().add(loadingLabel);
 
-        new Thread(() -> {
-            try {
-                String jsonResponse = tmdbClient.searchMulti(query);
-                JsonNode root = mapper.readTree(jsonResponse);
-                JsonNode results = root.path("results");
+        AsyncManager.runAsync(() -> {
+            String jsonResponse = tmdbClient.searchMulti(query);
+            return mapper.readTree(jsonResponse);
+        }).thenAcceptAsync(root -> {
+            resultsPane.getChildren().clear();
+            JsonNode results = root.path("results");
+            if (results.isArray()) {
+                for (JsonNode item : results) {
+                    String title = item.path("title").asText(item.path("name").asText("Sem Nome"));
+                    String mediaType = item.path("media_type").asText("unknown");
+                    String posterPath = item.path("poster_path").asText("");
+                    String overview = item.path("overview").asText("Sem sinopse disponível.");
+                    String id = item.path("id").asText();
 
-                Platform.runLater(() -> {
-                    resultsPane.getChildren().clear();
-                    if (results.isArray()) {
-                        for (JsonNode item : results) {
-                            String title = item.path("title").asText(item.path("name").asText("Sem Nome"));
-                            String mediaType = item.path("media_type").asText("unknown");
-                            String posterPath = item.path("poster_path").asText("");
-                            String overview = item.path("overview").asText("Sem sinopse disponível.");
-                            String id = item.path("id").asText();
-
-                            if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
-                                VBox card = createShowCard(id, title, mediaType, posterPath, overview, false);
-                                resultsPane.getChildren().add(card);
-                            }
-                        }
+                    if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
+                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false);
+                        resultsPane.getChildren().add(card);
                     }
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    resultsPane.getChildren().clear();
-                    Label err = new Label("Erro na busca: " + e.getMessage());
-                    err.setStyle("-fx-text-fill: #E53935;");
-                    resultsPane.getChildren().add(err);
-                });
+                }
             }
-        }).start();
+        }, Platform::runLater).exceptionally(e -> {
+            Platform.runLater(() -> {
+                resultsPane.getChildren().clear();
+                Label err = new Label("Erro na busca: " + e.getMessage());
+                err.setStyle("-fx-text-fill: #E53935;");
+                resultsPane.getChildren().add(err);
+            });
+            return null;
+        });
     }
 
     private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary) {
@@ -193,20 +189,19 @@ public class MainController {
 
     private void saveToLibraryQuick(String tmdbId, String title, String type, String posterPath, Button btn) {
         btn.setDisable(true);
-        new Thread(() -> {
-            try {
-                supabaseClient.addShowToLibrary(tmdbId, title, type, posterPath);
-                Platform.runLater(() -> {
-                    btn.setText("✓");
-                    btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px;");
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    btn.setDisable(false);
-                    System.err.println(e.getMessage());
-                });
-            }
-        }).start();
+        AsyncManager.runAsync(() -> {
+            supabaseClient.addShowToLibrary(tmdbId, title, type, posterPath);
+            return null;
+        }).thenRunAsync(() -> {
+            btn.setText("✓");
+            btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px;");
+        }, Platform::runLater).exceptionally(e -> {
+            Platform.runLater(() -> {
+                btn.setDisable(false);
+                System.err.println(e.getMessage());
+            });
+            return null;
+        });
     }
 
     @FXML

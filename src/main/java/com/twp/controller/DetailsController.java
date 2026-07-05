@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import com.twp.util.AsyncManager;
 
 public class DetailsController {
     @FXML private StackPane rootPane;
@@ -58,104 +59,100 @@ public class DetailsController {
             addBtn.setDisable(false);
         }
 
-        new Thread(() -> {
-            try {
-                String json = tmdbClient.getDetails(tmdbId, type);
-                JsonNode root = mapper.readTree(json);
+        AsyncManager.runAsync(() -> {
+            String json = tmdbClient.getDetails(tmdbId, type);
+            return mapper.readTree(json);
+        }).thenAcceptAsync(root -> {
+            currentTitle = root.path(type.equals("movie") ? "title" : "name").asText();
+            titleLabel.setText(currentTitle);
+            overviewLabel.setText(root.path("overview").asText("Sem sinopse disponível."));
+            
+            double rating = root.path("vote_average").asDouble();
+            ratingLabel.setText(String.format("★ %.1f", rating));
 
-                Platform.runLater(() -> {
-                    currentTitle = root.path(type.equals("movie") ? "title" : "name").asText();
-                    titleLabel.setText(currentTitle);
-                    overviewLabel.setText(root.path("overview").asText("Sem sinopse disponível."));
-                    
-                    double rating = root.path("vote_average").asDouble();
-                    ratingLabel.setText(String.format("★ %.1f", rating));
-
-                    currentPosterPath = root.path("poster_path").asText("");
-                    if (!currentPosterPath.isEmpty()) {
-                        posterImage.setImage(new Image(TMDB_IMAGE_BASE + "w500" + currentPosterPath, true));
-                    }
-
-                    String backdropPath = root.path("backdrop_path").asText("");
-                    if (!backdropPath.isEmpty()) {
-                        backdropImage.setImage(new Image(TMDB_IMAGE_BASE + "original" + backdropPath, true));
-                    }
-
-                    // Genres
-                    StringBuilder genres = new StringBuilder();
-                    for (JsonNode g : root.path("genres")) {
-                        genres.append(g.path("name").asText()).append(" • ");
-                    }
-                    if (genres.length() > 0) genresLabel.setText(genres.substring(0, genres.length() - 3));
-
-                    // Cast
-                    JsonNode cast = root.path("credits").path("cast");
-                    for (int i = 0; i < Math.min(cast.size(), 12); i++) {
-                        JsonNode actor = cast.get(i);
-                        String profile = actor.path("profile_path").asText("");
-                        if (!profile.isEmpty() && !profile.equals("null")) {
-                            VBox actorBox = new VBox(10);
-                            actorBox.setAlignment(javafx.geometry.Pos.TOP_CENTER);
-                            
-                            ImageView profImg = new ImageView(new Image(TMDB_IMAGE_BASE + "w200" + profile, true));
-                            profImg.setFitWidth(100);
-                            profImg.setFitHeight(150);
-                            profImg.setPreserveRatio(true);
-                            
-                            Label name = new Label(actor.path("name").asText());
-                            name.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
-                            name.setMaxWidth(100);
-                            name.setWrapText(true);
-                            name.setAlignment(javafx.geometry.Pos.CENTER);
-                            
-                            actorBox.getChildren().addAll(profImg, name);
-                            castBox.getChildren().add(actorBox);
-                        }
-                    }
-
-                    // Providers
-                    JsonNode brProviders = root.path("watch/providers").path("results").path("BR");
-                    if (brProviders.isMissingNode() || (!brProviders.has("flatrate") && !brProviders.has("rent"))) {
-                        Label lbl = new Label("Não disponível em streaming no Brasil.");
-                        lbl.setStyle("-fx-text-fill: #888; -fx-font-size: 16px;");
-                        providersBox.getChildren().add(lbl);
-                    } else {
-                        JsonNode flatrate = brProviders.has("flatrate") ? brProviders.path("flatrate") : brProviders.path("rent");
-                        for (JsonNode prov : flatrate) {
-                            String logoPath = prov.path("logo_path").asText("");
-                            if (!logoPath.isEmpty()) {
-                                ImageView logo = new ImageView(new Image(TMDB_IMAGE_BASE + "w92" + logoPath, true));
-                                logo.setFitWidth(60);
-                                logo.setFitHeight(60);
-                                providersBox.getChildren().add(logo);
-                            }
-                        }
-                    }
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> titleLabel.setText("Erro ao carregar detalhes."));
-                e.printStackTrace();
+            currentPosterPath = root.path("poster_path").asText("");
+            if (!currentPosterPath.isEmpty()) {
+                posterImage.setImage(new Image(TMDB_IMAGE_BASE + "w500" + currentPosterPath, true));
             }
-        }).start();
+
+            String backdropPath = root.path("backdrop_path").asText("");
+            if (!backdropPath.isEmpty()) {
+                backdropImage.setImage(new Image(TMDB_IMAGE_BASE + "original" + backdropPath, true));
+            }
+
+            // Genres
+            StringBuilder genres = new StringBuilder();
+            for (JsonNode g : root.path("genres")) {
+                genres.append(g.path("name").asText()).append(" • ");
+            }
+            if (genres.length() > 0) genresLabel.setText(genres.substring(0, genres.length() - 3));
+
+            // Cast
+            JsonNode cast = root.path("credits").path("cast");
+            for (int i = 0; i < Math.min(cast.size(), 12); i++) {
+                JsonNode actor = cast.get(i);
+                String profile = actor.path("profile_path").asText("");
+                if (!profile.isEmpty() && !profile.equals("null")) {
+                    VBox actorBox = new VBox(10);
+                    actorBox.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+                    
+                    ImageView profImg = new ImageView(new Image(TMDB_IMAGE_BASE + "w200" + profile, true));
+                    profImg.setFitWidth(100);
+                    profImg.setFitHeight(150);
+                    profImg.setPreserveRatio(true);
+                    
+                    Label name = new Label(actor.path("name").asText());
+                    name.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+                    name.setMaxWidth(100);
+                    name.setWrapText(true);
+                    name.setAlignment(javafx.geometry.Pos.CENTER);
+                    
+                    actorBox.getChildren().addAll(profImg, name);
+                    castBox.getChildren().add(actorBox);
+                }
+            }
+
+            // Providers
+            JsonNode brProviders = root.path("watch/providers").path("results").path("BR");
+            if (brProviders.isMissingNode() || (!brProviders.has("flatrate") && !brProviders.has("rent"))) {
+                Label lbl = new Label("Não disponível em streaming no Brasil.");
+                lbl.setStyle("-fx-text-fill: #888; -fx-font-size: 16px;");
+                providersBox.getChildren().add(lbl);
+            } else {
+                JsonNode flatrate = brProviders.has("flatrate") ? brProviders.path("flatrate") : brProviders.path("rent");
+                for (JsonNode prov : flatrate) {
+                    String logoPath = prov.path("logo_path").asText("");
+                    if (!logoPath.isEmpty()) {
+                        ImageView logo = new ImageView(new Image(TMDB_IMAGE_BASE + "w92" + logoPath, true));
+                        logo.setFitWidth(60);
+                        logo.setFitHeight(60);
+                        providersBox.getChildren().add(logo);
+                    }
+                }
+            }
+        }, Platform::runLater).exceptionally(e -> {
+            Platform.runLater(() -> titleLabel.setText("Erro ao carregar detalhes."));
+            e.printStackTrace();
+            return null;
+        });
     }
 
     @FXML
     private void handleAdd() {
         addBtn.setDisable(true);
         addBtn.setText("Adicionando...");
-        new Thread(() -> {
-            try {
-                boolean success = supabaseClient.addShowToLibrary(currentTmdbId, currentTitle, currentType, currentPosterPath);
-                Platform.runLater(() -> {
-                    addBtn.setText("Já adicionado");
-                });
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    addBtn.setText("Erro. Tentar novamente");
-                    addBtn.setDisable(false);
-                });
-            }
-        }).start();
+        AsyncManager.runAsync(() -> {
+            supabaseClient.addShowToLibrary(currentTmdbId, currentTitle, currentType, currentPosterPath);
+            return null;
+        }).thenRunAsync(() -> {
+            addBtn.setText("Já adicionado");
+        }, Platform::runLater).exceptionally(e -> {
+            Platform.runLater(() -> {
+                addBtn.setText("Erro. Tentar novamente");
+                addBtn.setDisable(false);
+            });
+            return null;
+        });
     }
 
     @FXML

@@ -6,8 +6,8 @@
 
 <HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.AuthController" style="-fx-background-color: #0A0A0C;">
     <!-- Left Banner -->
-    <StackPane HBox.hgrow="ALWAYS" prefWidth="600" style="-fx-background-color: #050505;">
-        <ImageView fx:id="bannerImage" fitWidth="700" fitHeight="800" preserveRatio="false" />
+    <StackPane fx:id="leftPane" HBox.hgrow="ALWAYS" prefWidth="600" style="-fx-background-color: #050505;">
+        <ImageView fx:id="bannerImage" preserveRatio="false" />
         <VBox alignment="BOTTOM_LEFT" style="-fx-background-color: linear-gradient(to top, #0A0A0C 0%, transparent 60%); -fx-padding: 50px;">
             <Label text="TWP" style="-fx-text-fill: #E53935; -fx-font-size: 48px; -fx-font-weight: bold;" />
             <Label text="Sua jornada cinematográfica começa aqui." style="-fx-text-fill: #DDDDDD; -fx-font-size: 18px;" />
@@ -15,8 +15,8 @@
     </StackPane>
 
     <!-- Right Form -->
-    <VBox alignment="CENTER" spacing="25" prefWidth="500" style="-fx-padding: 60px; -fx-background-color: #0A0A0C;">
-        <Label text="Welcome back" styleClass="title" style="-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;" />
+    <VBox alignment="CENTER" spacing="25" prefWidth="480" minWidth="400" style="-fx-padding: 60px; -fx-background-color: #0A0A0C;">
+        <Label text="Welcome" styleClass="title" style="-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;" />
         
         <VBox spacing="8" prefWidth="300" maxWidth="350">
             <Label text="Email address" style="-fx-text-fill: #888;" />
