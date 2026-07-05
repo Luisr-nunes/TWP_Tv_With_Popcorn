@@ -17,10 +17,10 @@
                 <Insets top="20" left="20" bottom="20" right="20" />
             </HBox.margin>
             <!-- Usando Emojis provisoriamente, na prática se usa FontAwesome -->
-            <Button text="🏠" styleClass="sidebar-btn" onAction="#showHome" />
-            <Button text="📚" styleClass="sidebar-btn" onAction="#showLibrary" />
+            <Button text="🏠" styleClass="sidebar-btn" onAction="#showHome" minWidth="50" minHeight="50" />
+            <Button text="📚" styleClass="sidebar-btn" onAction="#showLibrary" minWidth="50" minHeight="50" />
             <Region VBox.vgrow="ALWAYS" />
-            <Button text="⚙" styleClass="sidebar-btn" />
+            <Button text="⚙" styleClass="sidebar-btn" minWidth="50" minHeight="50" />
         </VBox>
 
         <!-- Main Content Area -->
@@ -60,7 +60,7 @@
                                 <Label fx:id="heroTitle" style="-fx-text-fill: white; -fx-font-size: 48px; -fx-font-weight: bold;" wrapText="true" maxWidth="800" />
                                 <Label fx:id="heroOverview" style="-fx-text-fill: #DDDDDD; -fx-font-size: 16px;" wrapText="true" maxWidth="700" />
                                 <HBox spacing="15" style="-fx-padding: 20px 0 0 0;">
-                                    <Button text="▶ Assistir" styleClass="primary-btn" onAction="#openHeroDetails" />
+                                    <Button text="▶ Sobre" styleClass="primary-btn" onAction="#openHeroDetails" />
                                     <Button text="Adicionar à Lista" styleClass="glass-btn" onAction="#addHeroToLibrary" />
                                 </HBox>
                             </VBox>
