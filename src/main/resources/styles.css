@@ -1,0 +1,19 @@
+/* Paleta: Pipoca Clássica (Amarelo, Branco e Vermelho) com Dark Mode */
+.root {
+    -fx-bg-color: #121212; /* Fundo bem escuro */
+    -fx-popcorn-yellow: #FFD54F;
+    -fx-popcorn-white: #FFFFFF;
+    -fx-popcorn-red: #E53935;
+    -fx-text-primary: #FFFFFF;
+}
+
+.main-background {
+    -fx-background-color: -fx-bg-color;
+}
+
+.title {
+    -fx-text-fill: -fx-popcorn-yellow;
+    -fx-font-size: 36px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
