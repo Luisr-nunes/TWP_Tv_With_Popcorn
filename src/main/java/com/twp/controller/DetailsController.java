@@ -27,6 +27,7 @@ public class DetailsController {
     @FXML private Label overviewLabel;
     @FXML private HBox genresBox;
     @FXML private Button addBtn;
+    @FXML private Button wishlistBtn;
     @FXML private Label ratingLabel;
     @FXML private TilePane galleryPane;
     @FXML private VBox episodesSection;
@@ -48,8 +49,9 @@ public class DetailsController {
     private String currentPosterPath;
     private Set<Integer> watchedEpisodes = new HashSet<>();
     private int currentRating = 0;
+    private int currentRuntime = 0;
 
-    public void loadDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodesJson, int userRating) {
+    public void loadDetails(String tmdbId, String type, String libraryStatus, String watchedEpisodesJson, int userRating) {
         this.currentTmdbId = tmdbId;
         this.currentType = type;
         this.currentRating = userRating;
@@ -58,6 +60,9 @@ public class DetailsController {
         this.watchedEpisodes.clear();
         try {
             JsonNode arr = mapper.readTree(watchedEpisodesJson);
+            if (arr.isTextual()) {
+                arr = mapper.readTree(arr.asText());
+            }
             if (arr.isArray()) {
                 for (JsonNode ep : arr) {
                     this.watchedEpisodes.add(ep.asInt());
@@ -82,19 +87,22 @@ public class DetailsController {
 
         backdropImage.fitWidthProperty().bind(rootPane.widthProperty());
 
-        if (inLibrary) {
+        if (libraryStatus != null) {
             addBtn.setVisible(true);
             addBtn.setManaged(true);
-            addBtn.setText("Remover da Biblioteca");
+            addBtn.setText("Remover");
             addBtn.getStyleClass().remove("primary-btn");
             addBtn.getStyleClass().add("secondary-btn");
             addBtn.setOnAction(e -> handleRemove());
+            
+            wishlistBtn.setVisible(false);
+            wishlistBtn.setManaged(false);
             
             ratingSection.setVisible(true);
             ratingSection.setManaged(true);
             renderStars(userRating);
 
-            if (type.equals("tv")) {
+            if (type.equals("tv") && libraryStatus.equals("WATCHING")) {
                 episodesSection.setVisible(true);
                 episodesSection.setManaged(true);
             } else {
@@ -104,11 +112,16 @@ public class DetailsController {
         } else {
             addBtn.setVisible(true);
             addBtn.setManaged(true);
-            addBtn.setText("Adicionar à Minha Lista");
+            addBtn.setText("Assistindo");
             addBtn.getStyleClass().remove("secondary-btn");
             addBtn.getStyleClass().add("primary-btn");
             addBtn.setDisable(false);
-            addBtn.setOnAction(e -> handleAdd());
+            addBtn.setOnAction(e -> handleAddWatching());
+            
+            wishlistBtn.setVisible(true);
+            wishlistBtn.setManaged(true);
+            wishlistBtn.setText("Quero Assistir");
+            wishlistBtn.setDisable(false);
             
             ratingSection.setVisible(false);
             ratingSection.setManaged(false);
@@ -137,10 +150,22 @@ public class DetailsController {
             double rating = root.path("vote_average").asDouble();
             ratingLabel.setText(String.format("%.1f", rating));
 
+            // Runtime calc
+            if (type.equals("movie")) {
+                currentRuntime = root.path("runtime").asInt(0);
+            } else {
+                JsonNode epTimes = root.path("episode_run_time");
+                if (epTimes.isArray() && epTimes.size() > 0) {
+                    currentRuntime = epTimes.get(0).asInt(45);
+                } else {
+                    currentRuntime = 45; // Default fallback
+                }
+            }
+
             // Meta Label
             String year = root.path(type.equals("movie") ? "release_date" : "first_air_date").asText("").split("-")[0];
             String language = root.path("original_language").asText().toUpperCase();
-            String eps = type.equals("movie") ? root.path("runtime").asInt() + " min" : root.path("number_of_seasons").asInt() + " Temporadas (" + root.path("number_of_episodes").asInt() + " eps)";
+            String eps = type.equals("movie") ? currentRuntime + " min" : root.path("number_of_seasons").asInt() + " Temporadas (" + root.path("number_of_episodes").asInt() + " eps)";
             metaLabel.setText(String.format("%s | %s | Idioma: %s", year, eps, language));
 
             // Genres
@@ -206,7 +231,7 @@ public class DetailsController {
             }
 
             // Seasons Combo
-            if (type.equals("tv") && inLibrary) {
+            if (type.equals("tv") && libraryStatus != null && libraryStatus.equals("WATCHING")) {
                 seasonCombo.setOnAction(null);
                 seasonCombo.getItems().clear();
                 for (JsonNode s : root.path("seasons")) {
@@ -281,17 +306,32 @@ public class DetailsController {
     }
 
     @FXML
-    private void handleAdd() {
+    private void handleAddWatching() {
+        saveShow("WATCHING");
+    }
+
+    @FXML
+    private void handleAddWishlist() {
+        saveShow("PLAN_TO_WATCH");
+    }
+
+    private void saveShow(String status) {
         addBtn.setDisable(true);
-        addBtn.setText("Adicionando...");
+        wishlistBtn.setDisable(true);
+        if (status.equals("WATCHING")) addBtn.setText("Adicionando...");
+        else wishlistBtn.setText("Adicionando...");
+        
         AsyncManager.runAsync(() -> {
-            return supabaseClient.addShowToLibrary(currentTmdbId, currentTitle, currentType, currentPosterPath);
+            return supabaseClient.addShowToLibrary(currentTmdbId, currentTitle, currentType, currentPosterPath, status, currentRuntime);
         }).thenAcceptAsync(success -> {
             if (success) {
-                addBtn.setText("Adicionado com Sucesso!");
+                if (status.equals("WATCHING")) addBtn.setText("Adicionado!");
+                else wishlistBtn.setText("Adicionado!");
             } else {
-                addBtn.setText("Erro. Tente novamente");
+                addBtn.setText("Erro.");
+                wishlistBtn.setText("Erro.");
                 addBtn.setDisable(false);
+                wishlistBtn.setDisable(false);
             }
         }, Platform::runLater);
     }

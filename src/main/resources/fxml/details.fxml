@@ -28,8 +28,9 @@
                     <Label fx:id="overviewLabel" style="-fx-text-fill: #DDDDDD; -fx-font-size: 16px; -fx-line-spacing: 6px;" wrapText="true" />
                     <HBox fx:id="genresBox" spacing="10" />
                     
-                    <HBox spacing="20" style="-fx-padding: 20px 0 0 0;">
-                        <Button fx:id="addBtn" text="Adicionar à Minha Lista" onAction="#handleAdd" styleClass="primary-btn" prefHeight="45" />
+                    <HBox spacing="10" style="-fx-padding: 20px 0 0 0;">
+                        <Button fx:id="addBtn" text="Assistindo" onAction="#handleAddWatching" styleClass="primary-btn" prefHeight="45" />
+                        <Button fx:id="wishlistBtn" text="Quero Assistir" onAction="#handleAddWishlist" styleClass="glass-btn" prefHeight="45" />
                         <Button text="Voltar" onAction="#handleBack" styleClass="secondary-btn" prefHeight="45" />
                     </HBox>
                 </VBox>

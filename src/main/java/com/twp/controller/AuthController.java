@@ -9,6 +9,10 @@ import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.beans.binding.Bindings;
+import com.twp.service.TmdbClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AuthController {
     @FXML private TextField emailField;
@@ -18,15 +22,61 @@ public class AuthController {
     @FXML private javafx.scene.layout.StackPane leftPane;
 
     private final SupabaseClient supabaseClient = new SupabaseClient();
+    private final TmdbClient tmdbClient = new TmdbClient();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @FXML
     public void initialize() {
-        // Ajusta a imagem dinamicamente ao tamanho da tela
-        bannerImage.fitWidthProperty().bind(leftPane.widthProperty());
-        bannerImage.fitHeightProperty().bind(leftPane.heightProperty());
+        leftPane.setStyle("-fx-background-color: #050505;");
+        bannerImage.setVisible(true);
+        bannerImage.setManaged(true);
+        bannerImage.setPreserveRatio(true);
+
+        // Clip the pane so the overflow image is hidden
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+        clip.widthProperty().bind(leftPane.widthProperty());
+        clip.heightProperty().bind(leftPane.heightProperty());
+        leftPane.setClip(clip);
+
+        // Bind width and height to always COVER the pane while keeping aspect ratio (no squishing)
+        bannerImage.fitWidthProperty().bind(Bindings.createDoubleBinding(() -> {
+            if (bannerImage.getImage() == null) return 0.0;
+            double imgW = bannerImage.getImage().getWidth();
+            double imgH = bannerImage.getImage().getHeight();
+            double paneW = leftPane.getWidth();
+            double paneH = leftPane.getHeight();
+            if (imgW == 0 || imgH == 0) return 0.0;
+            
+            double scale = Math.max(paneW / imgW, paneH / imgH);
+            return imgW * scale;
+        }, leftPane.widthProperty(), leftPane.heightProperty(), bannerImage.imageProperty()));
         
-        // Carrega o poster do filme Interstellar como fundo do login (tamanho w780 do TMDB)
-        bannerImage.setImage(new Image("https://image.tmdb.org/t/p/w780/gEU2QlsEOW3XZ101rMWiP3OPXWE.jpg", true));
+        bannerImage.fitHeightProperty().bind(Bindings.createDoubleBinding(() -> {
+            if (bannerImage.getImage() == null) return 0.0;
+            double imgW = bannerImage.getImage().getWidth();
+            double imgH = bannerImage.getImage().getHeight();
+            double paneW = leftPane.getWidth();
+            double paneH = leftPane.getHeight();
+            if (imgW == 0 || imgH == 0) return 0.0;
+            
+            double scale = Math.max(paneW / imgW, paneH / imgH);
+            return imgH * scale;
+        }, leftPane.widthProperty(), leftPane.heightProperty(), bannerImage.imageProperty()));
+        
+        com.twp.util.AsyncManager.runAsync(() -> {
+            String jsonResponse = tmdbClient.getTrending();
+            return mapper.readTree(jsonResponse);
+        }).thenAcceptAsync(root -> {
+            try {
+                JsonNode results = root.path("results");
+                if (results.isArray() && results.size() > 0) {
+                    String backdrop = results.get(0).path("backdrop_path").asText("");
+                    if (!backdrop.isEmpty() && !backdrop.equals("null")) {
+                        bannerImage.setImage(new Image("https://image.tmdb.org/t/p/w1280" + backdrop, true));
+                    }
+                }
+            } catch (Exception e) {}
+        }, Platform::runLater);
     }
 
     @FXML
