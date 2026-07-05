@@ -75,9 +75,11 @@ public class MainController {
                     String title = item.path("title").asText();
                     String type = item.path("media_type").asText();
                     String poster = item.path("poster_path").asText("");
-                    int progress = item.path("progress").asInt(0);
                     
-                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, progress);
+                    JsonNode watchedNode = item.path("watched_episodes");
+                    String watchedEpisodes = watchedNode.isMissingNode() ? "[]" : watchedNode.toString();
+                    
+                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, watchedEpisodes);
                     libraryPane.getChildren().add(card);
                 }
             } else {
@@ -120,7 +122,7 @@ public class MainController {
                     String id = item.path("id").asText();
 
                     if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
-                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, 0);
+                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, "[]");
                         resultsPane.getChildren().add(card);
                     }
                 }
@@ -136,7 +138,7 @@ public class MainController {
         });
     }
 
-    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, int progress) {
+    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, String watchedEpisodes) {
         VBox card = new VBox(5);
         card.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-min-width: 150px;");
         card.getStyleClass().add("card-hover");
@@ -177,14 +179,14 @@ public class MainController {
 
         // Click event on card
         card.setOnMouseClicked(e -> {
-            openDetails(tmdbId, type, inLibrary, progress);
+            openDetails(tmdbId, type, inLibrary, watchedEpisodes);
         });
 
         return card;
     }
 
-    private void openDetails(String tmdbId, String type, boolean inLibrary, int progress) {
-        detailsController.loadDetails(tmdbId, type, inLibrary, progress);
+    private void openDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodes) {
+        detailsController.loadDetails(tmdbId, type, inLibrary, watchedEpisodes);
         details.setVisible(true);
     }
 

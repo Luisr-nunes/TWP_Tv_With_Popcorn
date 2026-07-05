@@ -16,23 +16,23 @@
 
     <!-- Right Form -->
     <VBox alignment="CENTER" spacing="25" prefWidth="480" minWidth="400" style="-fx-padding: 60px; -fx-background-color: #0A0A0C;">
-        <Label text="Welcome" styleClass="title" style="-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;" />
+        <Label text="Bem-vindo(a)" styleClass="title" style="-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;" />
         
         <VBox spacing="8" prefWidth="300" maxWidth="350">
-            <Label text="Email address" style="-fx-text-fill: #888;" />
+            <Label text="Endereço de e-mail" style="-fx-text-fill: #888;" />
             <TextField fx:id="emailField" promptText="seu@email.com" styleClass="input-field" prefHeight="45" />
         </VBox>
         
         <VBox spacing="8" prefWidth="300" maxWidth="350">
-            <Label text="Password" style="-fx-text-fill: #888;" />
+            <Label text="Senha" style="-fx-text-fill: #888;" />
             <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="input-field" prefHeight="45" />
         </VBox>
         
         <Label fx:id="statusLabel" textFill="#E53935" wrapText="true" />
         
         <VBox spacing="15" prefWidth="300" maxWidth="350">
-            <Button text="Continue with Email" onAction="#handleLogin" styleClass="primary-btn" prefWidth="Infinity" prefHeight="45" />
-            <Button text="Create an Account" onAction="#handleRegister" styleClass="secondary-btn" prefWidth="Infinity" prefHeight="45" />
+            <Button text="Entrar" onAction="#handleLogin" styleClass="primary-btn" prefWidth="Infinity" prefHeight="45" />
+            <Button text="Criar Conta" onAction="#handleRegister" styleClass="secondary-btn" prefWidth="Infinity" prefHeight="45" />
         </VBox>
     </VBox>
 </HBox>

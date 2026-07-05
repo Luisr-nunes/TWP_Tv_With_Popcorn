@@ -63,4 +63,18 @@ public class TmdbClient {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    public String getSeasonDetails(String tmdbId, int seasonNumber) throws Exception {
+        String url = String.format("%s/tv/%s/season/%d?language=pt-BR", BASE_URL, tmdbId, seasonNumber);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + getApiToken())
+                .header("accept", "application/json")
+                .GET()
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
 }
