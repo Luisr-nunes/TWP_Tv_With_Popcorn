@@ -92,4 +92,18 @@ public class TmdbClient {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+    
+    public String findTmdbIdByTvdbId(String tvdbId) throws Exception {
+        String url = String.format("%s/find/%s?external_source=tvdb_id", BASE_URL, tvdbId);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + getApiToken())
+                .header("accept", "application/json")
+                .GET()
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
 }

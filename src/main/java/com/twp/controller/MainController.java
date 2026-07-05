@@ -18,7 +18,7 @@ import javafx.scene.shape.Rectangle;
 
 public class MainController {
     @FXML private StackPane rootPane;
-    @FXML private ImageView mainBgImage;
+    @FXML private StackPane mainBgPane;
     @FXML private TextField searchField;
     
     // Navigation Tabs
@@ -31,10 +31,12 @@ public class MainController {
     @FXML private ScrollPane homeScroll;
     @FXML private ScrollPane libraryScroll;
     @FXML private ScrollPane searchScroll;
+    @FXML private ScrollPane settingsScroll;
+    @FXML private Label settingsEmailLabel;
+    @FXML private Label importProgressLabel;
 
     // Home Area
     @FXML private StackPane heroPane;
-    @FXML private ImageView heroImage;
     @FXML private HBox heroGenres;
     @FXML private Label heroTitle;
     @FXML private Label heroOverview;
@@ -69,18 +71,12 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        // Setup hero image clipping (rounded corners)
-        Rectangle clip = new Rectangle();
-        clip.widthProperty().bind(heroPane.widthProperty());
-        clip.heightProperty().bind(heroPane.heightProperty());
-        clip.setArcWidth(20);
-        clip.setArcHeight(20);
-        heroImage.setClip(clip);
-        heroImage.fitWidthProperty().bind(heroPane.widthProperty());
-        heroImage.fitHeightProperty().bind(heroPane.heightProperty());
-
-        mainBgImage.fitWidthProperty().bind(rootPane.widthProperty());
-        mainBgImage.fitHeightProperty().bind(rootPane.heightProperty());
+        detailsController.setOnCloseCallback(() -> {
+            if (libraryScroll.isVisible()) {
+                boolean isLib = libraryTitle.getText().equals("Minha Biblioteca");
+                loadLibrary(isLib);
+            }
+        });
 
         showHome();
         loadAll(); // Carrega Trending All por padrão
@@ -91,6 +87,7 @@ public class MainController {
         homeScroll.setVisible(true);
         libraryScroll.setVisible(false);
         searchScroll.setVisible(false);
+        if (settingsScroll != null) settingsScroll.setVisible(false);
     }
 
     @FXML
@@ -98,6 +95,7 @@ public class MainController {
         homeScroll.setVisible(false);
         libraryScroll.setVisible(true);
         searchScroll.setVisible(false);
+        if (settingsScroll != null) settingsScroll.setVisible(false);
         setActiveTab(null);
         
         libraryTitle.setText("Minha Biblioteca");
@@ -112,6 +110,7 @@ public class MainController {
         homeScroll.setVisible(false);
         libraryScroll.setVisible(true);
         searchScroll.setVisible(false);
+        if (settingsScroll != null) settingsScroll.setVisible(false);
         setActiveTab(null);
         
         libraryTitle.setText("Lista de Desejos");
@@ -125,6 +124,40 @@ public class MainController {
     private void handleLogout() throws Exception {
         Session.clear();
         App.setRoot("auth");
+    }
+    
+    @FXML
+    private void showSettings() {
+        homeScroll.setVisible(false);
+        libraryScroll.setVisible(false);
+        searchScroll.setVisible(false);
+        if (settingsScroll != null) settingsScroll.setVisible(true);
+        setActiveTab(null);
+        if (settingsEmailLabel != null && Session.userId != null) {
+            settingsEmailLabel.setText("ID do Usuário: " + Session.userId.substring(0, Math.min(8, Session.userId.length())) + "...");
+        }
+    }
+    
+    @FXML
+    private void handleImportTvTime() {
+        javafx.stage.DirectoryChooser directoryChooser = new javafx.stage.DirectoryChooser();
+        directoryChooser.setTitle("Selecione a pasta gdpr-data do TV Time");
+        
+        java.io.File selectedDirectory = directoryChooser.showDialog(rootPane.getScene().getWindow());
+        
+        if (selectedDirectory != null) {
+            importProgressLabel.setText("Iniciando importação...");
+            com.twp.service.TvTimeImporter importer = new com.twp.service.TvTimeImporter();
+            importer.importFromFolder(selectedDirectory, 
+                msg -> importProgressLabel.setText(msg),
+                success -> {
+                    if (success) {
+                        importProgressLabel.setText("Importação finalizada! Seus dados estão na biblioteca.");
+                        loadLibrary(true);
+                    }
+                }
+            );
+        }
     }
 
     private void setActiveTab(Button activeBtn) {
@@ -228,8 +261,15 @@ public class MainController {
         
         if (!backdrop.isEmpty() && !backdrop.equals("null")) {
             String fullUrl = TMDB_IMAGE_LARGE + backdrop;
-            heroImage.setImage(new Image(fullUrl, true));
-            mainBgImage.setImage(new Image(fullUrl, true)); // Blurred background effect
+            Image bgImg = new Image(fullUrl, true);
+            bgImg.progressProperty().addListener((obs, oldV, newV) -> {
+                if (newV.doubleValue() == 1.0) {
+                    BackgroundSize coverSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, false, true);
+                    Background bg = new Background(new BackgroundImage(bgImg, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, coverSize));
+                    heroPane.setBackground(bg);
+                    mainBgPane.setBackground(bg);
+                }
+            });
         }
         
         heroGenres.getChildren().clear();
@@ -270,6 +310,7 @@ public class MainController {
         homeScroll.setVisible(false);
         libraryScroll.setVisible(false);
         searchScroll.setVisible(true);
+        if (settingsScroll != null) settingsScroll.setVisible(false);
         setActiveTab(null);
         resultsPane.getChildren().clear();
 
@@ -370,12 +411,19 @@ public class MainController {
                     statsMovies.setText(String.valueOf(totalMovies));
                     
                     int hours = totalRuntimeMinutes / 60;
+                    int remainingMinutes = totalRuntimeMinutes % 60;
                     int days = hours / 24;
                     int remainingHours = hours % 24;
                     int months = days / 30;
                     int remainingDays = days % 30;
                     
-                    statsTime.setText(months + " Meses  " + remainingDays + " Dias  " + remainingHours + " Horas");
+                    StringBuilder timeStr = new StringBuilder();
+                    if (months > 0) timeStr.append(months).append(" Meses ");
+                    if (remainingDays > 0) timeStr.append(remainingDays).append(" Dias ");
+                    if (remainingHours > 0) timeStr.append(remainingHours).append(" Horas ");
+                    if (remainingMinutes > 0 || timeStr.length() == 0) timeStr.append(remainingMinutes).append(" Minutos");
+                    
+                    statsTime.setText(timeStr.toString().trim());
                 }
                 
             } catch (Exception e) {

@@ -11,6 +11,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.beans.binding.Bindings;
 import com.twp.service.TmdbClient;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,7 +23,6 @@ public class AuthController {
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private Label statusLabel;
-    @FXML private ImageView bannerImage;
     @FXML private javafx.scene.layout.StackPane leftPane;
 
     private final SupabaseClient supabaseClient = new SupabaseClient();
@@ -28,40 +32,6 @@ public class AuthController {
     @FXML
     public void initialize() {
         leftPane.setStyle("-fx-background-color: #050505;");
-        bannerImage.setVisible(true);
-        bannerImage.setManaged(true);
-        bannerImage.setPreserveRatio(true);
-
-        // Clip the pane so the overflow image is hidden
-        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
-        clip.widthProperty().bind(leftPane.widthProperty());
-        clip.heightProperty().bind(leftPane.heightProperty());
-        leftPane.setClip(clip);
-
-        // Bind width and height to always COVER the pane while keeping aspect ratio (no squishing)
-        bannerImage.fitWidthProperty().bind(Bindings.createDoubleBinding(() -> {
-            if (bannerImage.getImage() == null) return 0.0;
-            double imgW = bannerImage.getImage().getWidth();
-            double imgH = bannerImage.getImage().getHeight();
-            double paneW = leftPane.getWidth();
-            double paneH = leftPane.getHeight();
-            if (imgW == 0 || imgH == 0) return 0.0;
-            
-            double scale = Math.max(paneW / imgW, paneH / imgH);
-            return imgW * scale;
-        }, leftPane.widthProperty(), leftPane.heightProperty(), bannerImage.imageProperty()));
-        
-        bannerImage.fitHeightProperty().bind(Bindings.createDoubleBinding(() -> {
-            if (bannerImage.getImage() == null) return 0.0;
-            double imgW = bannerImage.getImage().getWidth();
-            double imgH = bannerImage.getImage().getHeight();
-            double paneW = leftPane.getWidth();
-            double paneH = leftPane.getHeight();
-            if (imgW == 0 || imgH == 0) return 0.0;
-            
-            double scale = Math.max(paneW / imgW, paneH / imgH);
-            return imgH * scale;
-        }, leftPane.widthProperty(), leftPane.heightProperty(), bannerImage.imageProperty()));
         
         com.twp.util.AsyncManager.runAsync(() -> {
             String jsonResponse = tmdbClient.getTrending();
@@ -72,7 +42,12 @@ public class AuthController {
                 if (results.isArray() && results.size() > 0) {
                     String backdrop = results.get(0).path("backdrop_path").asText("");
                     if (!backdrop.isEmpty() && !backdrop.equals("null")) {
-                        bannerImage.setImage(new Image("https://image.tmdb.org/t/p/w1280" + backdrop, true));
+                        Image bg = new Image("https://image.tmdb.org/t/p/w1280" + backdrop, true);
+                        bg.progressProperty().addListener((obs, oldV, newV) -> {
+                            if (newV.doubleValue() == 1.0) {
+                                leftPane.setBackground(new Background(new BackgroundImage(bg, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+                            }
+                        });
                     }
                 }
             } catch (Exception e) {}

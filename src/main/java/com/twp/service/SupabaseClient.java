@@ -164,6 +164,9 @@ public class SupabaseClient {
                 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 204 && response.statusCode() != 200) {
+            try {
+                java.nio.file.Files.writeString(java.nio.file.Path.of("supabase_error.txt"), "HTTP " + response.statusCode() + " | Body: " + response.body());
+            } catch (Exception ex) {}
             throw new Exception("Falha ao atualizar episódios: HTTP " + response.statusCode());
         }
         return true;

@@ -43,6 +43,13 @@ public class DetailsController {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private static final String TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/";
+    private JsonNode currentShowNode;
+    private Runnable onCloseCallback;
+
+    public void setOnCloseCallback(Runnable callback) {
+        this.onCloseCallback = callback;
+    }
+
     private String currentTmdbId;
     private String currentType;
     private String currentTitle;
@@ -157,6 +164,10 @@ public class DetailsController {
                 JsonNode epTimes = root.path("episode_run_time");
                 if (epTimes.isArray() && epTimes.size() > 0) {
                     currentRuntime = epTimes.get(0).asInt(45);
+                } else if (root.has("last_episode_to_air") && root.path("last_episode_to_air").has("runtime") && !root.path("last_episode_to_air").path("runtime").isNull()) {
+                    currentRuntime = root.path("last_episode_to_air").path("runtime").asInt(45);
+                } else if (root.has("next_episode_to_air") && root.path("next_episode_to_air").has("runtime") && !root.path("next_episode_to_air").path("runtime").isNull()) {
+                    currentRuntime = root.path("next_episode_to_air").path("runtime").asInt(45);
                 } else {
                     currentRuntime = 45; // Default fallback
                 }
@@ -272,9 +283,14 @@ public class DetailsController {
                 int epId = ep.path("id").asInt();
                 int epNum = ep.path("episode_number").asInt();
                 String epName = ep.path("name").asText();
+                String epOverview = ep.path("overview").asText("");
+                int epRuntime = ep.path("runtime").asInt(0);
+                
+                VBox epContainer = new VBox(5);
+                epContainer.setStyle("-fx-padding: 10px 0; -fx-border-color: transparent transparent #222222 transparent; -fx-border-width: 0 0 1 0;");
                 
                 CheckBox cb = new CheckBox(epNum + ". " + epName);
-                cb.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-cursor: hand;");
+                cb.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-cursor: hand; -fx-font-weight: bold;");
                 cb.setSelected(watchedEpisodes.contains(epId));
                 
                 cb.setOnAction(ev -> {
@@ -283,7 +299,22 @@ public class DetailsController {
                     saveEpisodesToCloud();
                 });
                 
-                episodesBox.getChildren().add(cb);
+                epContainer.getChildren().add(cb);
+                
+                if (epRuntime > 0) {
+                    Label timeLabel = new Label(epRuntime + " min");
+                    timeLabel.setStyle("-fx-text-fill: #aaaaaa; -fx-font-size: 12px; -fx-padding: 0 0 0 25px;");
+                    epContainer.getChildren().add(timeLabel);
+                }
+                
+                if (!epOverview.isEmpty()) {
+                    Label descLabel = new Label(epOverview);
+                    descLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 13px; -fx-padding: 5px 0 0 25px;");
+                    descLabel.setWrapText(true);
+                    epContainer.getChildren().add(descLabel);
+                }
+                
+                episodesBox.getChildren().add(epContainer);
             }
         }, Platform::runLater);
     }
@@ -336,20 +367,32 @@ public class DetailsController {
         }, Platform::runLater);
     }
 
+    @FXML
     private void handleRemove() {
-        addBtn.setDisable(true);
-        addBtn.setText("Removendo...");
-        AsyncManager.runAsync(() -> {
-            return supabaseClient.removeShowFromLibrary(currentTmdbId);
-        }).thenAcceptAsync(success -> {
-            if (success) {
-                addBtn.setText("Removido!");
-                // Idealmente deveríamos atualizar a UI principal também, mas fechar a janela já basta por agora
-            } else {
-                addBtn.setText("Erro ao remover.");
-                addBtn.setDisable(false);
-            }
-        }, Platform::runLater);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmar Remoção");
+        alert.setHeaderText(null);
+        alert.setContentText("Tem certeza que deseja remover esta obra da biblioteca? O progresso será perdido.");
+        
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #151518; -fx-base: #151518;");
+        dialogPane.lookupAll(".label").forEach(node -> node.setStyle("-fx-text-fill: white; -fx-font-size: 14px;"));
+        
+        java.util.Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            addBtn.setDisable(true);
+            addBtn.setText("Removendo...");
+            AsyncManager.runAsync(() -> {
+                return supabaseClient.removeShowFromLibrary(currentTmdbId);
+            }).thenAcceptAsync(success -> {
+                if (success) {
+                    addBtn.setText("Removido!");
+                } else {
+                    addBtn.setText("Erro ao remover.");
+                    addBtn.setDisable(false);
+                }
+            }, Platform::runLater);
+        }
     }
     
     private void renderStars(int rating) {
@@ -382,5 +425,8 @@ public class DetailsController {
     @FXML
     private void handleBack() {
         rootPane.setVisible(false);
+        if (onCloseCallback != null) {
+            onCloseCallback.run();
+        }
     }
 }
