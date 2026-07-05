@@ -17,3 +17,40 @@
     -fx-font-weight: bold;
     -fx-font-family: 'Segoe UI', Arial, sans-serif;
 }
+
+.input-field {
+    -fx-background-color: #2A2A2A;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #888888;
+    -fx-border-color: #444444;
+    -fx-border-radius: 4px;
+    -fx-padding: 10px;
+    -fx-font-size: 14px;
+}
+.input-field:focused {
+    -fx-border-color: -fx-popcorn-yellow;
+}
+
+.primary-btn {
+    -fx-background-color: -fx-popcorn-yellow;
+    -fx-text-fill: #121212;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+}
+.primary-btn:hover {
+    -fx-background-color: #FFC107;
+}
+
+.secondary-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-popcorn-white;
+    -fx-border-color: -fx-popcorn-white;
+    -fx-border-radius: 4px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+.secondary-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}

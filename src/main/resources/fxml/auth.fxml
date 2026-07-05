@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.AuthController" styleClass="main-background">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="TWP - TV With Popcorn" styleClass="title" />
+    <Label text="Entre na sua conta para acessar sua biblioteca" style="-fx-text-fill: white;" />
+
+    <VBox spacing="10.0" maxWidth="300" alignment="CENTER">
+        <TextField fx:id="emailField" promptText="Email" styleClass="input-field" />
+        <PasswordField fx:id="passwordField" promptText="Senha" styleClass="input-field" />
+        
+        <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+            <Button text="Entrar" onAction="#handleLogin" styleClass="primary-btn" />
+            <Button text="Criar Conta" onAction="#handleSignup" styleClass="secondary-btn" />
+        </HBox>
+        <Label fx:id="statusLabel" text="" style="-fx-text-fill: #E53935;" />
+    </VBox>
+</VBox>

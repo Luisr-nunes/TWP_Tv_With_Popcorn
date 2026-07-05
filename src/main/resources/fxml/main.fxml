@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.MainController" styleClass="main-background">
+    <top>
+        <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-background-color: #1E1E1E; -fx-padding: 15px;">
+            <Label text="TWP" styleClass="title" style="-fx-font-size: 24px;" />
+            <Region HBox.hgrow="ALWAYS" />
+            <TextField fx:id="searchField" promptText="Pesquisar série ou filme..." styleClass="input-field" prefWidth="300" />
+            <Button text="Buscar" onAction="#handleSearch" styleClass="primary-btn" />
+            <Button text="Sair" onAction="#handleLogout" styleClass="secondary-btn" />
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #121212; -fx-border-color: #121212;">
+            <FlowPane fx:id="resultsPane" hgap="20" vgap="20" style="-fx-padding: 20px;" />
+        </ScrollPane>
+    </center>
+</BorderPane>
