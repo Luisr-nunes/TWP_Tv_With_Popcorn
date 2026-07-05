@@ -17,6 +17,11 @@ public class App extends Application {
         scene = new Scene(loadFXML("auth"), 1080, 720);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         stage.setTitle("TWP - TV With Popcorn");
+        try {
+            stage.getIcons().add(new javafx.scene.image.Image(getClass().getResourceAsStream("/icon.png")));
+        } catch (Exception e) {
+            System.err.println("Ícone não encontrado.");
+        }
         stage.setScene(scene);
         stage.show();
     }

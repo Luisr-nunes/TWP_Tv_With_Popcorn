@@ -52,9 +52,9 @@
                     <VBox spacing="40" style="-fx-padding: 20px 0 0 0;">
                         
                         <!-- Hero Banner -->
-                        <StackPane fx:id="heroPane" HBox.hgrow="ALWAYS" prefHeight="400" style="-fx-background-radius: 20px; -fx-background-color: #151518; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 20, 0, 0, 0);">
+                        <StackPane fx:id="heroPane" HBox.hgrow="ALWAYS" prefHeight="400" style="-fx-background-radius: 20px; -fx-background-color: #0F171E; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 20, 0, 0, 0);">
                             <!-- Gradient overlay -->
-                            <VBox alignment="BOTTOM_LEFT" style="-fx-background-color: linear-gradient(to top, rgba(10,10,12,1) 0%, transparent 100%); -fx-padding: 40px; -fx-background-radius: 20px;">
+                            <VBox alignment="BOTTOM_LEFT" style="-fx-background-color: linear-gradient(to top, rgba(15,23,30,1) 0%, transparent 100%); -fx-padding: 40px; -fx-background-radius: 20px;">
                                 <HBox spacing="10" fx:id="heroGenres" style="-fx-padding: 0 0 10px 0;" />
                                 <Label fx:id="heroTitle" style="-fx-text-fill: white; -fx-font-size: 48px; -fx-font-weight: bold;" wrapText="true" maxWidth="800" />
                                 <Label fx:id="heroOverview" style="-fx-text-fill: #DDDDDD; -fx-font-size: 16px;" wrapText="true" maxWidth="700" />

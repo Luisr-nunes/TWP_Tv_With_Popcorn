@@ -177,7 +177,7 @@ public class MainController {
         setActiveTab(tabAll);
         showHome();
         carouselTitle.setText("Em Alta");
-        fetchCategory(() -> tmdbClient.getTrending());
+        fetchCategory(() -> tmdbClient.getTrending(), null);
     }
 
     @FXML
@@ -185,7 +185,7 @@ public class MainController {
         setActiveTab(tabMovies);
         showHome();
         carouselTitle.setText("Filmes em Alta");
-        fetchCategory(() -> tmdbClient.getTrendingMovies());
+        fetchCategory(() -> tmdbClient.getTrendingMovies(), null);
     }
 
     @FXML
@@ -193,7 +193,11 @@ public class MainController {
         setActiveTab(tabTv);
         showHome();
         carouselTitle.setText("Séries em Alta");
-        fetchCategory(() -> tmdbClient.getTrendingTv());
+        // Na aba de Séries, filtramos tudo que for linguagem original 'ja' (Japonês/Anime)
+        fetchCategory(() -> tmdbClient.getTrendingTv(), node -> {
+            String originalLang = node.path("original_language").asText("");
+            return !originalLang.equals("ja");
+        });
     }
 
     @FXML
@@ -201,18 +205,26 @@ public class MainController {
         setActiveTab(tabAnime);
         showHome();
         carouselTitle.setText("Animes em Alta");
-        fetchCategory(() -> tmdbClient.getAnime());
+        fetchCategory(() -> tmdbClient.getAnime(), null);
     }
 
     private interface Fetcher {
         String fetch() throws Exception;
     }
 
-    private void fetchCategory(Fetcher fetcher) {
+    private void fetchCategory(Fetcher fetcher, java.util.function.Predicate<JsonNode> filter) {
         recommendationsBox.getChildren().clear();
         Label loading = new Label("Carregando...");
         loading.setStyle("-fx-text-fill: white;");
         recommendationsBox.getChildren().add(loading);
+
+        // Limpar o Hero Banner imediatamente para não dar a impressão de "travado"
+        if (heroTitle != null) heroTitle.setText("");
+        if (heroOverview != null) heroOverview.setText("");
+        if (heroGenres != null) heroGenres.getChildren().clear();
+        if (heroPane != null) {
+            heroPane.setStyle("-fx-background-color: #0F171E; -fx-background-radius: 20px;");
+        }
 
         AsyncManager.runAsync(fetcher::fetch)
             .thenAcceptAsync(jsonResponse -> {
@@ -223,21 +235,30 @@ public class MainController {
                     recommendationsBox.getChildren().clear();
                     
                     if (results.isArray() && results.size() > 0) {
-                        // Set Hero Banner using the first result
-                        JsonNode hero = results.get(0);
-                        setupHeroBanner(hero);
-                        
-                        // Populate carousel with the rest
-                        for (int i = 1; i < results.size(); i++) {
-                            JsonNode item = results.get(i);
-                            String id = item.path("id").asText();
-                            String title = item.path("title").isMissingNode() ? item.path("name").asText() : item.path("title").asText();
-                            String mediaType = item.path("media_type").asText("tv"); // Default to TV for anime discover
-                            String posterPath = item.path("poster_path").asText("");
+                        java.util.List<JsonNode> filteredList = new java.util.ArrayList<>();
+                        for (JsonNode node : results) {
+                            if (filter == null || filter.test(node)) {
+                                filteredList.add(node);
+                            }
+                        }
+
+                        if (!filteredList.isEmpty()) {
+                            // Set Hero Banner using the first result
+                            JsonNode hero = filteredList.get(0);
+                            setupHeroBanner(hero);
                             
-                            if (!posterPath.isEmpty() && !posterPath.equals("null")) {
-                                VBox card = createShowCard(id, title, mediaType, posterPath, "", null, "[]", 0);
-                                recommendationsBox.getChildren().add(card);
+                            // Populate carousel with the rest
+                            for (int i = 1; i < filteredList.size(); i++) {
+                                JsonNode item = filteredList.get(i);
+                                String id = item.path("id").asText();
+                                String title = item.path("title").isMissingNode() ? item.path("name").asText() : item.path("title").asText();
+                                String mediaType = item.path("media_type").asText("tv"); // Default to TV for anime discover
+                                String posterPath = item.path("poster_path").asText("");
+                                
+                                if (!posterPath.isEmpty() && !posterPath.equals("null")) {
+                                    VBox card = createShowCard(id, title, mediaType, posterPath, "", null, "[]", 0);
+                                    recommendationsBox.getChildren().add(card);
+                                }
                             }
                         }
                     }
