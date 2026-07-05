@@ -27,7 +27,7 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-padding: 10px 20px;
-    -fx-background-radius: 8px;
+    -fx-background-radius: 20px;
     -fx-cursor: hand;
 }
 .primary-btn:hover {
@@ -65,12 +65,12 @@
 }
 
 .card-hover {
-    -fx-background-color: #151518;
-    -fx-padding: 10px;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
     -fx-background-radius: 12px;
 }
 .card-hover:hover {
-    -fx-effect: dropshadow(three-pass-box, rgba(229, 57, 53, 0.4), 15, 0, 0, 0);
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.2), 10, 0, 0, 0);
     -fx-cursor: hand;
 }
 
@@ -115,10 +115,67 @@
 
 /* Genre Pill */
 .genre-pill {
-    -fx-background-color: transparent;
-    -fx-border-color: #888888;
-    -fx-border-radius: 20px;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 20px;
     -fx-padding: 5px 15px;
     -fx-text-fill: #DDDDDD;
+    -fx-font-size: 12px;
+}
+
+/* NOVO: Glassmorphism e Navigation */
+.sidebar-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #999999;
+    -fx-font-size: 24px;
+    -fx-cursor: hand;
+    -fx-padding: 10px;
+    -fx-background-radius: 50%;
+}
+.sidebar-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-text-fill: white;
+}
+
+.glass-input {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #999999;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 20px;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 20px;
+}
+
+.nav-tab {
+    -fx-background-color: transparent;
+    -fx-text-fill: #888888;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8px 20px;
+}
+.nav-tab:hover {
+    -fx-text-fill: #DDDDDD;
+}
+.nav-tab-active {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20px;
+    -fx-padding: 8px 20px;
+}
+
+.glass-btn {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 20px;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 20px;
+    -fx-cursor: hand;
+}
+.glass-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
 }

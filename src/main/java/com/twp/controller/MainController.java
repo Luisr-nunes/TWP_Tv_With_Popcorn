@@ -12,18 +12,38 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.scene.layout.VBox;
 import com.twp.util.AsyncManager;
+import javafx.geometry.Pos;
+import javafx.scene.shape.Rectangle;
 
 public class MainController {
+    @FXML private StackPane rootPane;
+    @FXML private ImageView mainBgImage;
     @FXML private TextField searchField;
-    @FXML private FlowPane resultsPane;
-    @FXML private FlowPane libraryPane;
     
-    @FXML private VBox libraryTab;
-    @FXML private VBox searchTab;
-    @FXML private Button libraryTabBtn;
-    @FXML private Button searchTabBtn;
+    // Navigation Tabs
+    @FXML private Button tabAll;
+    @FXML private Button tabMovies;
+    @FXML private Button tabTv;
+    @FXML private Button tabAnime;
+
+    // Scrolls
+    @FXML private ScrollPane homeScroll;
+    @FXML private ScrollPane libraryScroll;
+    @FXML private ScrollPane searchScroll;
+
+    // Home Area
+    @FXML private StackPane heroPane;
+    @FXML private ImageView heroImage;
+    @FXML private HBox heroGenres;
+    @FXML private Label heroTitle;
+    @FXML private Label heroOverview;
+    @FXML private Label carouselTitle;
+    @FXML private HBox recommendationsBox;
+
+    // Grid Areas
+    @FXML private FlowPane libraryPane;
+    @FXML private FlowPane resultsPane;
 
     // Details View
     @FXML private StackPane details;
@@ -34,108 +54,263 @@ public class MainController {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private static final String TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/w200";
-    private static final String TMDB_IMAGE_LARGE = "https://image.tmdb.org/t/p/w500";
+    private static final String TMDB_IMAGE_LARGE = "https://image.tmdb.org/t/p/w1280";
+
+    private String heroTmdbId;
+    private String heroType;
+    private String heroPoster;
 
     @FXML
     public void initialize() {
-        showSearchTab();
-        handleSearch(); // Carrega os Trending automaticamente
+        // Setup hero image clipping (rounded corners)
+        Rectangle clip = new Rectangle();
+        clip.widthProperty().bind(heroPane.widthProperty());
+        clip.heightProperty().bind(heroPane.heightProperty());
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        heroImage.setClip(clip);
+        heroImage.fitWidthProperty().bind(heroPane.widthProperty());
+        heroImage.fitHeightProperty().bind(heroPane.heightProperty());
+
+        mainBgImage.fitWidthProperty().bind(rootPane.widthProperty());
+        mainBgImage.fitHeightProperty().bind(rootPane.heightProperty());
+
+        showHome();
+        loadAll(); // Carrega Trending All por padrão
     }
 
     @FXML
-    private void showLibraryTab() {
-        libraryTab.setVisible(true);
-        searchTab.setVisible(false);
-        libraryTabBtn.getStyleClass().add("tab-btn-active");
-        searchTabBtn.getStyleClass().remove("tab-btn-active");
+    private void showHome() {
+        homeScroll.setVisible(true);
+        libraryScroll.setVisible(false);
+        searchScroll.setVisible(false);
+    }
+
+    @FXML
+    private void showLibrary() {
+        homeScroll.setVisible(false);
+        libraryScroll.setVisible(true);
+        searchScroll.setVisible(false);
+        
+        // Desmarca abas
+        setActiveTab(null);
         loadLibrary();
     }
 
     @FXML
-    private void showSearchTab() {
-        searchTab.setVisible(true);
-        libraryTab.setVisible(false);
-        searchTabBtn.getStyleClass().add("tab-btn-active");
-        libraryTabBtn.getStyleClass().remove("tab-btn-active");
+    private void handleLogout() throws Exception {
+        Session.clear();
+        App.setRoot("auth");
     }
 
-    private void loadLibrary() {
-        libraryPane.getChildren().clear();
-        Label loadingLabel = new Label("Carregando sua biblioteca...");
-        loadingLabel.setStyle("-fx-text-fill: white;");
-        libraryPane.getChildren().add(loadingLabel);
+    private void setActiveTab(Button activeBtn) {
+        tabAll.getStyleClass().remove("nav-tab-active"); tabAll.getStyleClass().add("nav-tab");
+        tabMovies.getStyleClass().remove("nav-tab-active"); tabMovies.getStyleClass().add("nav-tab");
+        tabTv.getStyleClass().remove("nav-tab-active"); tabTv.getStyleClass().add("nav-tab");
+        tabAnime.getStyleClass().remove("nav-tab-active"); tabAnime.getStyleClass().add("nav-tab");
+        
+        if (activeBtn != null) {
+            activeBtn.getStyleClass().remove("nav-tab");
+            activeBtn.getStyleClass().add("nav-tab-active");
+        }
+    }
 
-        AsyncManager.runAsync(() -> {
-            String json = supabaseClient.getUserLibrary();
-            return mapper.readTree(json);
-        }).thenAcceptAsync(root -> {
-            libraryPane.getChildren().clear();
-            if (root.isArray() && root.size() > 0) {
-                for (JsonNode item : root) {
-                    String title = item.path("title").asText();
-                    String type = item.path("media_type").asText();
-                    String poster = item.path("poster_path").asText("");
+    @FXML
+    private void loadAll() {
+        setActiveTab(tabAll);
+        showHome();
+        carouselTitle.setText("Em Alta");
+        fetchCategory(() -> tmdbClient.getTrending());
+    }
+
+    @FXML
+    private void loadMovies() {
+        setActiveTab(tabMovies);
+        showHome();
+        carouselTitle.setText("Filmes em Alta");
+        fetchCategory(() -> tmdbClient.getTrendingMovies());
+    }
+
+    @FXML
+    private void loadTv() {
+        setActiveTab(tabTv);
+        showHome();
+        carouselTitle.setText("Séries em Alta");
+        fetchCategory(() -> tmdbClient.getTrendingTv());
+    }
+
+    @FXML
+    private void loadAnime() {
+        setActiveTab(tabAnime);
+        showHome();
+        carouselTitle.setText("Animes em Alta");
+        fetchCategory(() -> tmdbClient.getAnime());
+    }
+
+    private interface Fetcher {
+        String fetch() throws Exception;
+    }
+
+    private void fetchCategory(Fetcher fetcher) {
+        recommendationsBox.getChildren().clear();
+        Label loading = new Label("Carregando...");
+        loading.setStyle("-fx-text-fill: white;");
+        recommendationsBox.getChildren().add(loading);
+
+        AsyncManager.runAsync(fetcher::fetch)
+            .thenAcceptAsync(jsonResponse -> {
+                try {
+                    JsonNode root = mapper.readTree(jsonResponse);
+                    JsonNode results = root.path("results");
                     
-                    JsonNode watchedNode = item.path("watched_episodes");
-                    String watchedEpisodes = watchedNode.isMissingNode() ? "[]" : watchedNode.toString();
+                    recommendationsBox.getChildren().clear();
                     
-                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, watchedEpisodes);
-                    libraryPane.getChildren().add(card);
+                    if (results.isArray() && results.size() > 0) {
+                        // Set Hero Banner using the first result
+                        JsonNode hero = results.get(0);
+                        setupHeroBanner(hero);
+                        
+                        // Populate carousel with the rest
+                        for (int i = 1; i < results.size(); i++) {
+                            JsonNode item = results.get(i);
+                            String id = item.path("id").asText();
+                            String title = item.path("title").isMissingNode() ? item.path("name").asText() : item.path("title").asText();
+                            String mediaType = item.path("media_type").asText("tv"); // Default to TV for anime discover
+                            String posterPath = item.path("poster_path").asText("");
+                            
+                            if (!posterPath.isEmpty() && !posterPath.equals("null")) {
+                                VBox card = createShowCard(id, title, mediaType, posterPath, "", false, "[]");
+                                recommendationsBox.getChildren().add(card);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } else {
-                Label emptyLabel = new Label("Sua biblioteca está vazia. Vá em Buscar para adicionar!");
-                emptyLabel.setStyle("-fx-text-fill: #888;");
-                libraryPane.getChildren().add(emptyLabel);
-            }
-        }, Platform::runLater).exceptionally(e -> {
-            Platform.runLater(() -> {
-                libraryPane.getChildren().clear();
-                Label err = new Label("Erro ao carregar: " + e.getMessage());
-                err.setStyle("-fx-text-fill: #E53935;");
-                libraryPane.getChildren().add(err);
-            });
-            return null;
-        });
+            }, Platform::runLater);
+    }
+
+    private void setupHeroBanner(JsonNode item) {
+        heroTmdbId = item.path("id").asText();
+        heroType = item.path("media_type").asText("tv");
+        heroPoster = item.path("poster_path").asText("");
+        
+        String title = item.path("title").isMissingNode() ? item.path("name").asText() : item.path("title").asText();
+        String overview = item.path("overview").asText();
+        String backdrop = item.path("backdrop_path").asText("");
+        
+        heroTitle.setText(title);
+        heroOverview.setText(overview.length() > 200 ? overview.substring(0, 200) + "..." : overview);
+        
+        if (!backdrop.isEmpty() && !backdrop.equals("null")) {
+            String fullUrl = TMDB_IMAGE_LARGE + backdrop;
+            heroImage.setImage(new Image(fullUrl, true));
+            mainBgImage.setImage(new Image(fullUrl, true)); // Blurred background effect
+        }
+        
+        heroGenres.getChildren().clear();
+        Label genreLabel = new Label("Trending");
+        genreLabel.getStyleClass().add("genre-pill");
+        heroGenres.getChildren().add(genreLabel);
+    }
+
+    @FXML
+    private void openHeroDetails() {
+        if (heroTmdbId != null) {
+            openDetails(heroTmdbId, heroType, false, "[]");
+        }
+    }
+
+    @FXML
+    private void addHeroToLibrary() {
+        if (heroTmdbId != null) {
+            AsyncManager.runAsync(() -> {
+                return supabaseClient.addShowToLibrary(heroTmdbId, heroTitle.getText(), heroType, heroPoster);
+            }).thenAcceptAsync(success -> {
+                if (success) {
+                    System.out.println("Adicionado à biblioteca!");
+                }
+            }, Platform::runLater);
+        }
     }
 
     @FXML
     private void handleSearch() {
         String query = searchField.getText().trim();
+        if (query.isEmpty()) {
+            showHome();
+            return;
+        }
 
+        homeScroll.setVisible(false);
+        libraryScroll.setVisible(false);
+        searchScroll.setVisible(true);
+        setActiveTab(null);
         resultsPane.getChildren().clear();
-        Label loadingLabel = new Label(query.isEmpty() ? "Carregando destaques do dia..." : "Buscando...");
-        loadingLabel.setStyle("-fx-text-fill: white;");
-        resultsPane.getChildren().add(loadingLabel);
+
+        Label loading = new Label("Pesquisando...");
+        loading.setStyle("-fx-text-fill: white;");
+        resultsPane.getChildren().add(loading);
 
         AsyncManager.runAsync(() -> {
-            String jsonResponse = query.isEmpty() ? tmdbClient.getTrending() : tmdbClient.searchMulti(query);
-            return mapper.readTree(jsonResponse);
-        }).thenAcceptAsync(root -> {
-            resultsPane.getChildren().clear();
-            JsonNode results = root.path("results");
-            if (results.isArray()) {
-                for (JsonNode item : results) {
-                    String title = item.path("title").asText(item.path("name").asText("Sem Nome"));
-                    String mediaType = item.path("media_type").asText("unknown");
-                    String posterPath = item.path("poster_path").asText("");
-                    String overview = item.path("overview").asText("Sem sinopse disponível.");
-                    String id = item.path("id").asText();
+            return tmdbClient.searchMulti(query);
+        }).thenAcceptAsync(jsonResponse -> {
+            try {
+                JsonNode root = mapper.readTree(jsonResponse);
+                JsonNode results = root.path("results");
+                resultsPane.getChildren().clear();
 
-                    if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
-                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, "[]");
-                        resultsPane.getChildren().add(card);
+                if (results.isArray()) {
+                    for (JsonNode item : results) {
+                        String mediaType = item.path("media_type").asText();
+                        String title = item.path("title").isMissingNode() ? item.path("name").asText() : item.path("title").asText();
+                        String posterPath = item.path("poster_path").asText("");
+                        String overview = item.path("overview").asText("");
+                        String id = item.path("id").asText();
+
+                        if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
+                            VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, "[]");
+                            resultsPane.getChildren().add(card);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }, Platform::runLater).exceptionally(e -> {
-            Platform.runLater(() -> {
-                resultsPane.getChildren().clear();
-                Label err = new Label("Erro na busca: " + e.getMessage());
-                err.setStyle("-fx-text-fill: #E53935;");
-                resultsPane.getChildren().add(err);
-            });
-            return null;
-        });
+        }, Platform::runLater);
+    }
+
+    private void loadLibrary() {
+        libraryPane.getChildren().clear();
+        
+        Label loading = new Label("Carregando sua biblioteca...");
+        loading.setStyle("-fx-text-fill: white;");
+        libraryPane.getChildren().add(loading);
+
+        AsyncManager.runAsync(() -> {
+            return supabaseClient.getUserLibrary();
+        }).thenAcceptAsync(jsonResponse -> {
+            try {
+                JsonNode root = mapper.readTree(jsonResponse);
+                libraryPane.getChildren().clear();
+
+                if (root.isArray()) {
+                    for (JsonNode item : root) {
+                        String title = item.path("title").asText();
+                        String type = item.path("media_type").asText();
+                        String poster = item.path("poster_path").asText("");
+                        
+                        JsonNode watchedNode = item.path("watched_episodes");
+                        String watchedEpisodes = watchedNode.isMissingNode() ? "[]" : watchedNode.toString();
+                        
+                        VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, watchedEpisodes);
+                        libraryPane.getChildren().add(card);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, Platform::runLater);
     }
 
     private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, String watchedEpisodes) {
@@ -144,40 +319,27 @@ public class MainController {
         card.getStyleClass().add("card-hover");
 
         ImageView imageView = new ImageView();
+        if (posterPath != null && !posterPath.isEmpty()) {
+            imageView.setImage(new Image(TMDB_IMAGE_URL + posterPath, true));
+        }
         imageView.setFitWidth(150);
         imageView.setFitHeight(225);
         imageView.setPreserveRatio(true);
-        imageView.setStyle("-fx-background-radius: 12px;");
         
-        if (posterPath != null && !posterPath.isEmpty()) {
-            Image image = new Image(TMDB_IMAGE_URL + posterPath, true);
-            imageView.setImage(image);
-        }
-
-        StackPane imageContainer = new StackPane();
-        imageContainer.getChildren().add(imageView);
-
-        if (!inLibrary) {
-            Button quickAddBtn = new Button("+");
-            quickAddBtn.setStyle("-fx-background-color: rgba(229, 57, 53, 0.9); -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px; -fx-cursor: hand;");
-            StackPane.setAlignment(quickAddBtn, javafx.geometry.Pos.TOP_RIGHT);
-            StackPane.setMargin(quickAddBtn, new javafx.geometry.Insets(10));
-            
-            quickAddBtn.setOnAction(e -> {
-                e.consume(); // Não clica no card
-                saveToLibraryQuick(tmdbId, title, type, posterPath, quickAddBtn);
-            });
-            imageContainer.getChildren().add(quickAddBtn);
-        }
+        Rectangle clip = new Rectangle(150, 225);
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        imageView.setClip(clip);
 
         Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5px 0 0 5px;");
-        titleLabel.setWrapText(true);
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
         titleLabel.setMaxWidth(150);
 
-        card.getChildren().addAll(imageContainer, titleLabel);
+        Label typeLabel = new Label(type.equals("movie") ? "Filme" : "Série");
+        typeLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 12px;");
 
-        // Click event on card
+        card.getChildren().addAll(imageView, titleLabel, typeLabel);
+
         card.setOnMouseClicked(e -> {
             openDetails(tmdbId, type, inLibrary, watchedEpisodes);
         });
@@ -188,33 +350,5 @@ public class MainController {
     private void openDetails(String tmdbId, String type, boolean inLibrary, String watchedEpisodes) {
         detailsController.loadDetails(tmdbId, type, inLibrary, watchedEpisodes);
         details.setVisible(true);
-    }
-
-    private void saveToLibraryQuick(String tmdbId, String title, String type, String posterPath, Button btn) {
-        btn.setDisable(true);
-        AsyncManager.runAsync(() -> {
-            supabaseClient.addShowToLibrary(tmdbId, title, type, posterPath);
-            return null;
-        }).thenRunAsync(() -> {
-            btn.setText("✓");
-            btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px;");
-        }, Platform::runLater).exceptionally(e -> {
-            Platform.runLater(() -> {
-                btn.setDisable(false);
-                System.err.println(e.getMessage());
-            });
-            return null;
-        });
-    }
-
-    @FXML
-    private void handleLogout() {
-        Session.accessToken = null;
-        Session.userId = null;
-        try {
-            App.setRoot("auth");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

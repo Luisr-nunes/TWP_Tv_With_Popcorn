@@ -37,8 +37,23 @@ public class TmdbClient {
     }
 
     public String getTrending() throws Exception {
-        String url = String.format("%s/trending/all/day?language=pt-BR", BASE_URL);
-        
+        return fetchFromUrl(String.format("%s/trending/all/day?language=pt-BR", BASE_URL));
+    }
+    
+    public String getTrendingMovies() throws Exception {
+        return fetchFromUrl(String.format("%s/trending/movie/day?language=pt-BR", BASE_URL));
+    }
+    
+    public String getTrendingTv() throws Exception {
+        return fetchFromUrl(String.format("%s/trending/tv/day?language=pt-BR", BASE_URL));
+    }
+    
+    public String getAnime() throws Exception {
+        // with_genres=16 (Animation) and with_original_language=ja (Japanese)
+        return fetchFromUrl(String.format("%s/discover/tv?with_genres=16&with_original_language=ja&language=pt-BR&sort_by=popularity.desc", BASE_URL));
+    }
+
+    private String fetchFromUrl(String url) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Authorization", "Bearer " + getApiToken())

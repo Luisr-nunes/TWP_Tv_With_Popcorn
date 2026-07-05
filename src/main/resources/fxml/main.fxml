@@ -1,53 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.image.ImageView?>
 
-<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.MainController" styleClass="main-background">
-    <!-- Main Content -->
-    <BorderPane>
-        <top>
-            <VBox style="-fx-background-color: #1E1E1E;">
-                <!-- Header -->
-                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 15px;">
-                    <Label text="TWP" styleClass="title" style="-fx-font-size: 24px;" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Button text="Sair" onAction="#handleLogout" styleClass="secondary-btn" />
-                </HBox>
-                <!-- Tabs -->
-                <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 15px 15px 15px;">
-                    <Button text="Minha Biblioteca" onAction="#showLibraryTab" styleClass="tab-btn" fx:id="libraryTabBtn" />
-                    <Button text="Buscar" onAction="#showSearchTab" styleClass="tab-btn" fx:id="searchTabBtn" />
-                </HBox>
-            </VBox>
-        </top>
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.MainController" styleClass="main-background">
+    
+    <!-- Imagem de fundo principal (ficará com overlay escuro) -->
+    <ImageView fx:id="mainBgImage" preserveRatio="false" opacity="0.3" />
+    <Region style="-fx-background-color: rgba(10, 10, 12, 0.85);" />
 
-        <center>
-            <StackPane>
-                <!-- Library Tab -->
-                <VBox fx:id="libraryTab" visible="true" style="-fx-padding: 20px;" spacing="15">
-                    <Label text="Suas Séries e Filmes Salvos" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
-                    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+    <HBox spacing="0" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <!-- Sidebar -->
+        <VBox alignment="TOP_CENTER" spacing="40" style="-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 20px; -fx-padding: 30px 10px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);" HBox.hgrow="NEVER" maxWidth="80">
+            <HBox.margin>
+                <Insets top="20" left="20" bottom="20" right="20" />
+            </HBox.margin>
+            <!-- Usando Emojis provisoriamente, na prática se usa FontAwesome -->
+            <Button text="🏠" styleClass="sidebar-btn" onAction="#showHome" />
+            <Button text="📚" styleClass="sidebar-btn" onAction="#showLibrary" />
+            <Region VBox.vgrow="ALWAYS" />
+            <Button text="⚙" styleClass="sidebar-btn" />
+        </VBox>
+
+        <!-- Main Content Area -->
+        <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: rgba(255, 255, 255, 0.03); -fx-background-radius: 20px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 15, 0, 0, 0);" spacing="20">
+            <HBox.margin>
+                <Insets top="20" bottom="20" right="20" />
+            </HBox.margin>
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30" />
+            </padding>
+            
+            <!-- Header (Search + Tabs + Logout) -->
+            <HBox spacing="30" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField" promptText="Pesquisar..." styleClass="glass-input" prefWidth="300" onAction="#handleSearch" />
+                <HBox spacing="10" HBox.hgrow="ALWAYS" alignment="CENTER">
+                    <Button text="Tudo" styleClass="nav-tab-active" onAction="#loadAll" fx:id="tabAll" />
+                    <Button text="Filmes" styleClass="nav-tab" onAction="#loadMovies" fx:id="tabMovies" />
+                    <Button text="Séries" styleClass="nav-tab" onAction="#loadTv" fx:id="tabTv" />
+                    <Button text="Animes" styleClass="nav-tab" onAction="#loadAnime" fx:id="tabAnime" />
+                </HBox>
+                <Button text="Sair" styleClass="glass-btn" onAction="#handleLogout" />
+            </HBox>
+
+            <!-- Dynamic Content Area -->
+            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS">
+                
+                <!-- Home View (Hero + Carousels) -->
+                <ScrollPane fx:id="homeScroll" fitToWidth="true" styleClass="scroll-pane" visible="true">
+                    <VBox spacing="40" style="-fx-padding: 20px 0 0 0;">
+                        
+                        <!-- Hero Banner -->
+                        <StackPane fx:id="heroPane" HBox.hgrow="ALWAYS" prefHeight="400" style="-fx-background-radius: 20px; -fx-background-color: #151518; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 20, 0, 0, 0);">
+                            <ImageView fx:id="heroImage" preserveRatio="false" />
+                            <!-- Gradient overlay -->
+                            <VBox alignment="BOTTOM_LEFT" style="-fx-background-color: linear-gradient(to top, rgba(10,10,12,1) 0%, transparent 100%); -fx-padding: 40px; -fx-background-radius: 20px;">
+                                <HBox spacing="10" fx:id="heroGenres" style="-fx-padding: 0 0 10px 0;" />
+                                <Label fx:id="heroTitle" style="-fx-text-fill: white; -fx-font-size: 48px; -fx-font-weight: bold;" wrapText="true" maxWidth="800" />
+                                <Label fx:id="heroOverview" style="-fx-text-fill: #DDDDDD; -fx-font-size: 16px;" wrapText="true" maxWidth="700" />
+                                <HBox spacing="15" style="-fx-padding: 20px 0 0 0;">
+                                    <Button text="▶ Assistir" styleClass="primary-btn" onAction="#openHeroDetails" />
+                                    <Button text="Adicionar à Lista" styleClass="glass-btn" onAction="#addHeroToLibrary" />
+                                </HBox>
+                            </VBox>
+                        </StackPane>
+
+                        <!-- Horizontal Carousel: Em Alta -->
+                        <VBox spacing="15">
+                            <Label fx:id="carouselTitle" text="Você pode gostar" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 20px;" />
+                            <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="NEVER" styleClass="scroll-pane" style="-fx-background: transparent; -fx-background-color: transparent;">
+                                <HBox fx:id="recommendationsBox" spacing="20" style="-fx-padding: 10px 0;" />
+                            </ScrollPane>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+
+                <!-- Library View (Grid) -->
+                <ScrollPane fx:id="libraryScroll" fitToWidth="true" styleClass="scroll-pane" visible="false">
+                    <VBox spacing="30" style="-fx-padding: 20px 0 0 0;">
+                        <Label text="Minha Biblioteca" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
                         <FlowPane fx:id="libraryPane" hgap="20" vgap="20" />
-                    </ScrollPane>
-                </VBox>
+                    </VBox>
+                </ScrollPane>
 
-                <!-- Search Tab -->
-                <VBox fx:id="searchTab" visible="false" style="-fx-padding: 20px;" spacing="15">
-                    <HBox spacing="10">
-                        <TextField fx:id="searchField" promptText="Pesquisar série ou filme..." styleClass="input-field" prefWidth="400" />
-                        <Button text="Pesquisar" onAction="#handleSearch" styleClass="primary-btn" />
-                    </HBox>
-                    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <!-- Search Results View (Grid) -->
+                <ScrollPane fx:id="searchScroll" fitToWidth="true" styleClass="scroll-pane" visible="false">
+                    <VBox spacing="30" style="-fx-padding: 20px 0 0 0;">
+                        <Label text="Resultados da Busca" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
                         <FlowPane fx:id="resultsPane" hgap="20" vgap="20" />
-                    </ScrollPane>
-                </VBox>
-            </StackPane>
-        </center>
-    </BorderPane>
+                    </VBox>
+                </ScrollPane>
 
-    <!-- Sub-views -->
+            </StackPane>
+        </VBox>
+    </HBox>
+
     <fx:include source="details.fxml" fx:id="details" />
 </StackPane>
