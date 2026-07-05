@@ -116,4 +116,23 @@ public class SupabaseClient {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    public boolean updateProgress(String tmdbId, int progress) throws Exception {
+        String jsonBody = String.format("{\"progress\": %d}", progress);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + "/rest/v1/user_shows?user_id=eq." + Session.userId + "&tmdb_id=eq." + tmdbId))
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + Session.accessToken)
+                .header("Content-Type", "application/json")
+                .header("Prefer", "return=minimal")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 204 && response.statusCode() != 200) {
+            throw new Exception("Falha ao atualizar progresso: HTTP " + response.statusCode());
+        }
+        return true;
+    }
 }

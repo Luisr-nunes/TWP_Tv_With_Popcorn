@@ -36,6 +36,20 @@ public class TmdbClient {
         return response.body();
     }
 
+    public String getTrending() throws Exception {
+        String url = String.format("%s/trending/all/day?language=pt-BR", BASE_URL);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + getApiToken())
+                .header("accept", "application/json")
+                .GET()
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
+
     public String getDetails(String id, String mediaType) throws Exception {
         String url = String.format("%s/%s/%s?append_to_response=credits,images,watch/providers&language=pt-BR", BASE_URL, mediaType, id);
         

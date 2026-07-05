@@ -24,6 +24,8 @@ public class DetailsController {
     @FXML private Label genresLabel;
     @FXML private Label overviewLabel;
     @FXML private Button addBtn;
+    @FXML private HBox progressBox;
+    @FXML private Label progressLabel;
     @FXML private HBox castBox;
     @FXML private HBox providersBox;
 
@@ -36,10 +38,13 @@ public class DetailsController {
     private String currentType;
     private String currentTitle;
     private String currentPosterPath;
+    private int currentProgress = 0;
+    private int totalEpisodes = 1;
 
-    public void loadDetails(String tmdbId, String type, boolean inLibrary) {
+    public void loadDetails(String tmdbId, String type, boolean inLibrary, int initialProgress) {
         this.currentTmdbId = tmdbId;
         this.currentType = type;
+        this.currentProgress = initialProgress;
         
         // Reset view
         backdropImage.setImage(null);
@@ -52,11 +57,18 @@ public class DetailsController {
         providersBox.getChildren().clear();
 
         if (inLibrary) {
-            addBtn.setText("Já adicionado");
-            addBtn.setDisable(true);
+            addBtn.setVisible(false);
+            addBtn.setManaged(false);
+            progressBox.setVisible(true);
+            progressBox.setManaged(true);
+            progressLabel.setText(currentProgress + " / Carregando...");
         } else {
+            addBtn.setVisible(true);
+            addBtn.setManaged(true);
             addBtn.setText("Adicionar à Minha Lista");
             addBtn.setDisable(false);
+            progressBox.setVisible(false);
+            progressBox.setManaged(false);
         }
 
         AsyncManager.runAsync(() -> {
@@ -66,6 +78,15 @@ public class DetailsController {
             currentTitle = root.path(type.equals("movie") ? "title" : "name").asText();
             titleLabel.setText(currentTitle);
             overviewLabel.setText(root.path("overview").asText("Sem sinopse disponível."));
+            
+            if (type.equals("tv")) {
+                totalEpisodes = root.path("number_of_episodes").asInt(1);
+            } else {
+                totalEpisodes = 1;
+            }
+            if (inLibrary) {
+                updateProgressLabel();
+            }
             
             double rating = root.path("vote_average").asDouble();
             ratingLabel.setText(String.format("★ %.1f", rating));
@@ -151,6 +172,41 @@ public class DetailsController {
                 addBtn.setText("Erro. Tentar novamente");
                 addBtn.setDisable(false);
             });
+            return null;
+        });
+    }
+
+    private void updateProgressLabel() {
+        if (currentType.equals("movie")) {
+            progressLabel.setText(currentProgress >= 1 ? "Assistido" : "Não Assistido");
+        } else {
+            progressLabel.setText(currentProgress + " / " + totalEpisodes);
+        }
+    }
+
+    @FXML
+    private void handleProgressPlus() {
+        if (currentProgress < totalEpisodes) {
+            currentProgress++;
+            updateProgressLabel();
+            saveProgressToCloud();
+        }
+    }
+
+    @FXML
+    private void handleProgressMinus() {
+        if (currentProgress > 0) {
+            currentProgress--;
+            updateProgressLabel();
+            saveProgressToCloud();
+        }
+    }
+
+    private void saveProgressToCloud() {
+        AsyncManager.runAsync(() -> {
+            return supabaseClient.updateProgress(currentTmdbId, currentProgress);
+        }).exceptionally(e -> {
+            System.err.println("Failed to update progress: " + e.getMessage());
             return null;
         });
     }

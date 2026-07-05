@@ -22,7 +22,16 @@
                             <Label fx:id="overviewLabel" style="-fx-text-fill: #DDDDDD; -fx-font-size: 18px; -fx-line-spacing: 5px;" wrapText="true" maxWidth="900" />
                             <HBox spacing="20" style="-fx-padding: 30px 0 0 0;">
                                 <Button text="Voltar" onAction="#handleBack" styleClass="secondary-btn" prefHeight="45" />
+                                
+                                <!-- Botão Add (Não está na Biblioteca) -->
                                 <Button fx:id="addBtn" text="Adicionar à Minha Lista" onAction="#handleAdd" styleClass="primary-btn" prefHeight="45" />
+                                
+                                <!-- Controle de Progresso (Já está na Biblioteca) -->
+                                <HBox fx:id="progressBox" spacing="15" alignment="CENTER_LEFT" visible="false" managed="false" style="-fx-background-color: #1A1A1D; -fx-padding: 5px 15px; -fx-background-radius: 8px; -fx-border-color: #333333; -fx-border-radius: 8px;">
+                                    <Button text="-" onAction="#handleProgressMinus" style="-fx-background-color: transparent; -fx-text-fill: #E53935; -fx-font-weight: bold; -fx-font-size: 18px; -fx-cursor: hand;" />
+                                    <Label fx:id="progressLabel" text="0 / 0" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;" />
+                                    <Button text="+" onAction="#handleProgressPlus" style="-fx-background-color: transparent; -fx-text-fill: #4CAF50; -fx-font-weight: bold; -fx-font-size: 18px; -fx-cursor: hand;" />
+                                </HBox>
                             </HBox>
                         </VBox>
                     </HBox>

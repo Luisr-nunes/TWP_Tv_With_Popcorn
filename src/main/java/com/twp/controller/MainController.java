@@ -38,7 +38,8 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        showLibraryTab();
+        showSearchTab();
+        handleSearch(); // Carrega os Trending automaticamente
     }
 
     @FXML
@@ -74,8 +75,9 @@ public class MainController {
                     String title = item.path("title").asText();
                     String type = item.path("media_type").asText();
                     String poster = item.path("poster_path").asText("");
+                    int progress = item.path("progress").asInt(0);
                     
-                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true);
+                    VBox card = createShowCard(item.path("tmdb_id").asText(), title, type, poster, "", true, progress);
                     libraryPane.getChildren().add(card);
                 }
             } else {
@@ -96,16 +98,15 @@ public class MainController {
 
     @FXML
     private void handleSearch() {
-        String query = searchField.getText();
-        if (query.isEmpty()) return;
+        String query = searchField.getText().trim();
 
         resultsPane.getChildren().clear();
-        Label loadingLabel = new Label("Buscando...");
+        Label loadingLabel = new Label(query.isEmpty() ? "Carregando destaques do dia..." : "Buscando...");
         loadingLabel.setStyle("-fx-text-fill: white;");
         resultsPane.getChildren().add(loadingLabel);
 
         AsyncManager.runAsync(() -> {
-            String jsonResponse = tmdbClient.searchMulti(query);
+            String jsonResponse = query.isEmpty() ? tmdbClient.getTrending() : tmdbClient.searchMulti(query);
             return mapper.readTree(jsonResponse);
         }).thenAcceptAsync(root -> {
             resultsPane.getChildren().clear();
@@ -119,7 +120,7 @@ public class MainController {
                     String id = item.path("id").asText();
 
                     if (!mediaType.equals("person") && !posterPath.isEmpty() && !posterPath.equals("null")) {
-                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false);
+                        VBox card = createShowCard(id, title, mediaType, posterPath, overview, false, 0);
                         resultsPane.getChildren().add(card);
                     }
                 }
@@ -135,7 +136,7 @@ public class MainController {
         });
     }
 
-    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary) {
+    private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary, int progress) {
         VBox card = new VBox(5);
         card.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-min-width: 150px;");
         card.getStyleClass().add("card-hover");
@@ -176,14 +177,14 @@ public class MainController {
 
         // Click event on card
         card.setOnMouseClicked(e -> {
-            openDetails(tmdbId, type, inLibrary);
+            openDetails(tmdbId, type, inLibrary, progress);
         });
 
         return card;
     }
 
-    private void openDetails(String tmdbId, String type, boolean inLibrary) {
-        detailsController.loadDetails(tmdbId, type, inLibrary);
+    private void openDetails(String tmdbId, String type, boolean inLibrary, int progress) {
+        detailsController.loadDetails(tmdbId, type, inLibrary, progress);
         details.setVisible(true);
     }
 
