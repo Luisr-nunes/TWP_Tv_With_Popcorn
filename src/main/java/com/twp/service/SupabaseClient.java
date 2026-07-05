@@ -98,8 +98,11 @@ public class SupabaseClient {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        // 201 Created
-        return response.statusCode() == 201;
+        
+        if (response.statusCode() != 201) {
+            throw new Exception("HTTP " + response.statusCode() + " - " + response.body());
+        }
+        return true;
     }
 
     public String getUserLibrary() throws Exception {

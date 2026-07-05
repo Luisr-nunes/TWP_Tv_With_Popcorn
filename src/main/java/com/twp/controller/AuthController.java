@@ -7,13 +7,22 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.application.Platform;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class AuthController {
     @FXML private TextField emailField;
     @FXML private PasswordField passwordField;
     @FXML private Label statusLabel;
+    @FXML private ImageView bannerImage;
 
     private final SupabaseClient supabaseClient = new SupabaseClient();
+
+    @FXML
+    public void initialize() {
+        // Carrega o poster do filme Interstellar como fundo do login (tamanho w780 do TMDB)
+        bannerImage.setImage(new Image("https://image.tmdb.org/t/p/w780/gEU2QlsEOW3XZ101rMWiP3OPXWE.jpg", true));
+    }
 
     @FXML
     private void handleLogin() {

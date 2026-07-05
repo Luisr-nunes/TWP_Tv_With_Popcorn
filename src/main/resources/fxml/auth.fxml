@@ -1,25 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.geometry.Insets?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.AuthController" styleClass="main-background">
-    <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-    </padding>
+<HBox xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.AuthController" style="-fx-background-color: #0A0A0C;">
+    <!-- Left Banner -->
+    <StackPane HBox.hgrow="ALWAYS" prefWidth="600" style="-fx-background-color: #050505;">
+        <ImageView fx:id="bannerImage" fitWidth="700" fitHeight="800" preserveRatio="false" />
+        <VBox alignment="BOTTOM_LEFT" style="-fx-background-color: linear-gradient(to top, #0A0A0C 0%, transparent 60%); -fx-padding: 50px;">
+            <Label text="TWP" style="-fx-text-fill: #E53935; -fx-font-size: 48px; -fx-font-weight: bold;" />
+            <Label text="Sua jornada cinematográfica começa aqui." style="-fx-text-fill: #DDDDDD; -fx-font-size: 18px;" />
+        </VBox>
+    </StackPane>
 
-    <Label text="TWP - TV With Popcorn" styleClass="title" />
-    <Label text="Entre na sua conta para acessar sua biblioteca" style="-fx-text-fill: white;" />
-
-    <VBox spacing="10.0" maxWidth="300" alignment="CENTER">
-        <TextField fx:id="emailField" promptText="Email" styleClass="input-field" />
-        <PasswordField fx:id="passwordField" promptText="Senha" styleClass="input-field" />
+    <!-- Right Form -->
+    <VBox alignment="CENTER" spacing="25" prefWidth="500" style="-fx-padding: 60px; -fx-background-color: #0A0A0C;">
+        <Label text="Welcome back" styleClass="title" style="-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;" />
         
-        <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
-            <Button text="Entrar" onAction="#handleLogin" styleClass="primary-btn" />
-            <Button text="Criar Conta" onAction="#handleSignup" styleClass="secondary-btn" />
-        </HBox>
-        <Label fx:id="statusLabel" text="" style="-fx-text-fill: #E53935;" />
+        <VBox spacing="8" prefWidth="300" maxWidth="350">
+            <Label text="Email address" style="-fx-text-fill: #888;" />
+            <TextField fx:id="emailField" promptText="seu@email.com" styleClass="input-field" prefHeight="45" />
+        </VBox>
+        
+        <VBox spacing="8" prefWidth="300" maxWidth="350">
+            <Label text="Password" style="-fx-text-fill: #888;" />
+            <PasswordField fx:id="passwordField" promptText="••••••••" styleClass="input-field" prefHeight="45" />
+        </VBox>
+        
+        <Label fx:id="statusLabel" textFill="#E53935" wrapText="true" />
+        
+        <VBox spacing="15" prefWidth="300" maxWidth="350">
+            <Button text="Continue with Email" onAction="#handleLogin" styleClass="primary-btn" prefWidth="Infinity" prefHeight="45" />
+            <Button text="Create an Account" onAction="#handleRegister" styleClass="secondary-btn" prefWidth="Infinity" prefHeight="45" />
+        </VBox>
     </VBox>
-</VBox>
+</HBox>

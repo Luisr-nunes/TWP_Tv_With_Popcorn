@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.DetailsController" visible="false" style="-fx-background-color: #0A0A0C;">
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" style="-fx-background-color: #0A0A0C;">
+        <VBox style="-fx-background-color: #0A0A0C;">
+            <!-- Header (Backdrop + Info overlay) -->
+            <StackPane alignment="BOTTOM_LEFT" style="-fx-background-color: #000;">
+                <ImageView fx:id="backdropImage" fitWidth="1280" fitHeight="600" preserveRatio="false" />
+                <VBox style="-fx-background-color: linear-gradient(to top, #0A0A0C 0%, rgba(10,10,12,0.8) 30%, transparent 100%); -fx-padding: 80px 50px 30px 50px;">
+                    <HBox spacing="40" alignment="BOTTOM_LEFT">
+                        <ImageView fx:id="posterImage" fitWidth="220" fitHeight="330" preserveRatio="true" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 20, 0, 0, 0);" />
+                        <VBox spacing="15">
+                            <Label fx:id="titleLabel" style="-fx-text-fill: white; -fx-font-size: 48px; -fx-font-weight: bold;" wrapText="true" />
+                            <HBox spacing="15">
+                                <Label fx:id="ratingLabel" style="-fx-text-fill: #FFD54F; -fx-font-size: 20px; -fx-font-weight: bold;" />
+                                <Label fx:id="genresLabel" style="-fx-text-fill: #CCCCCC; -fx-font-size: 18px;" />
+                            </HBox>
+                            <Label fx:id="overviewLabel" style="-fx-text-fill: #DDDDDD; -fx-font-size: 18px; -fx-line-spacing: 5px;" wrapText="true" maxWidth="900" />
+                            <HBox spacing="20" style="-fx-padding: 30px 0 0 0;">
+                                <Button text="Voltar" onAction="#handleBack" styleClass="secondary-btn" prefHeight="45" />
+                                <Button fx:id="addBtn" text="Adicionar à Minha Lista" onAction="#handleAdd" styleClass="primary-btn" prefHeight="45" />
+                            </HBox>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </StackPane>
+
+            <!-- Cast Section -->
+            <VBox spacing="20" style="-fx-padding: 50px;">
+                <Label text="Elenco Principal" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" />
+                <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" style="-fx-background: transparent; -fx-background-color: transparent;">
+                    <HBox fx:id="castBox" spacing="25" />
+                </ScrollPane>
+            </VBox>
+
+            <!-- Providers Section -->
+            <VBox spacing="20" style="-fx-padding: 0 50px 60px 50px;">
+                <Label text="Onde Assistir" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" />
+                <HBox fx:id="providersBox" spacing="20" />
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</StackPane>

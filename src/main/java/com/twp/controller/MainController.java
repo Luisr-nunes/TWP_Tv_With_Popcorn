@@ -23,14 +23,9 @@ public class MainController {
     @FXML private Button libraryTabBtn;
     @FXML private Button searchTabBtn;
 
-    // Modal
-    @FXML private StackPane modalOverlay;
-    @FXML private ImageView modalPoster;
-    @FXML private Label modalTitle;
-    @FXML private Label modalType;
-    @FXML private Label modalOverview;
-    @FXML private Button modalAddBtn;
-    @FXML private Label modalStatus;
+    // Details View
+    @FXML private StackPane details;
+    @FXML private DetailsController detailsController;
 
     private final TmdbClient tmdbClient = new TmdbClient();
     private final SupabaseClient supabaseClient = new SupabaseClient();
@@ -146,88 +141,72 @@ public class MainController {
 
     private VBox createShowCard(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary) {
         VBox card = new VBox(5);
-        card.setStyle("-fx-background-color: #1E1E1E; -fx-padding: 10px; -fx-background-radius: 8px; -fx-min-width: 150px;");
+        card.setStyle("-fx-background-color: transparent; -fx-padding: 0; -fx-min-width: 150px;");
         card.getStyleClass().add("card-hover");
 
         ImageView imageView = new ImageView();
-        imageView.setFitWidth(130);
-        imageView.setFitHeight(195);
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(225);
         imageView.setPreserveRatio(true);
+        imageView.setStyle("-fx-background-radius: 12px;");
         
         if (posterPath != null && !posterPath.isEmpty()) {
             Image image = new Image(TMDB_IMAGE_URL + posterPath, true);
             imageView.setImage(image);
         }
 
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-        titleLabel.setWrapText(true);
-        titleLabel.setMaxWidth(130);
+        StackPane imageContainer = new StackPane();
+        imageContainer.getChildren().add(imageView);
 
-        card.getChildren().addAll(imageView, titleLabel);
+        if (!inLibrary) {
+            Button quickAddBtn = new Button("+");
+            quickAddBtn.setStyle("-fx-background-color: rgba(229, 57, 53, 0.9); -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px; -fx-cursor: hand;");
+            StackPane.setAlignment(quickAddBtn, javafx.geometry.Pos.TOP_RIGHT);
+            StackPane.setMargin(quickAddBtn, new javafx.geometry.Insets(10));
+            
+            quickAddBtn.setOnAction(e -> {
+                e.consume(); // Não clica no card
+                saveToLibraryQuick(tmdbId, title, type, posterPath, quickAddBtn);
+            });
+            imageContainer.getChildren().add(quickAddBtn);
+        }
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5px 0 0 5px;");
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(150);
+
+        card.getChildren().addAll(imageContainer, titleLabel);
 
         // Click event on card
         card.setOnMouseClicked(e -> {
-            openModal(tmdbId, title, type, posterPath, overview, inLibrary);
+            openDetails(tmdbId, type, inLibrary);
         });
 
         return card;
     }
 
-    private void openModal(String tmdbId, String title, String type, String posterPath, String overview, boolean inLibrary) {
-        modalTitle.setText(title);
-        modalType.setText(type.equals("movie") ? "Filme" : "Série");
-        modalOverview.setText(overview);
-        modalStatus.setText("");
-        
-        if (posterPath != null && !posterPath.isEmpty()) {
-            modalPoster.setImage(new Image(TMDB_IMAGE_LARGE + posterPath, true));
-        } else {
-            modalPoster.setImage(null);
-        }
-
-        if (inLibrary) {
-            modalAddBtn.setText("Já adicionado");
-            modalAddBtn.setDisable(true);
-        } else {
-            modalAddBtn.setText("Adicionar à Lista");
-            modalAddBtn.setDisable(false);
-            modalAddBtn.setOnAction(e -> {
-                saveToLibrary(tmdbId, title, type, posterPath);
-            });
-        }
-
-        modalOverlay.setVisible(true);
+    private void openDetails(String tmdbId, String type, boolean inLibrary) {
+        detailsController.loadDetails(tmdbId, type, inLibrary);
+        details.setVisible(true);
     }
 
-    private void saveToLibrary(String tmdbId, String title, String type, String posterPath) {
-        modalAddBtn.setDisable(true);
-        modalStatus.setText("Adicionando...");
-
+    private void saveToLibraryQuick(String tmdbId, String title, String type, String posterPath, Button btn) {
+        btn.setDisable(true);
         new Thread(() -> {
             try {
-                boolean success = supabaseClient.addShowToLibrary(tmdbId, title, type, posterPath);
+                supabaseClient.addShowToLibrary(tmdbId, title, type, posterPath);
                 Platform.runLater(() -> {
-                    if (success) {
-                        modalStatus.setText("Salvo!");
-                        modalAddBtn.setText("Já adicionado");
-                    } else {
-                        modalStatus.setText("Falha ao salvar.");
-                        modalAddBtn.setDisable(false);
-                    }
+                    btn.setText("✓");
+                    btn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-background-radius: 20px; -fx-min-width: 40px; -fx-min-height: 40px;");
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    modalStatus.setText("Erro: " + e.getMessage());
-                    modalAddBtn.setDisable(false);
+                    btn.setDisable(false);
+                    System.err.println(e.getMessage());
                 });
             }
         }).start();
-    }
-
-    @FXML
-    private void closeModal() {
-        modalOverlay.setVisible(false);
     }
 
     @FXML

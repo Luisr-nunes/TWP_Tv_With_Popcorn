@@ -48,24 +48,6 @@
         </center>
     </BorderPane>
 
-    <!-- Modal Pane (Hidden by default) -->
-    <StackPane fx:id="modalOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
-        <VBox fx:id="modalBox" spacing="15" maxWidth="500" maxHeight="400" style="-fx-background-color: #1E1E1E; -fx-padding: 20px; -fx-background-radius: 8px;">
-            <HBox spacing="20">
-                <ImageView fx:id="modalPoster" fitWidth="150" fitHeight="225" preserveRatio="true" />
-                <VBox spacing="10" HBox.hgrow="ALWAYS">
-                    <Label fx:id="modalTitle" style="-fx-text-fill: -fx-popcorn-yellow; -fx-font-size: 22px; -fx-font-weight: bold;" wrapText="true" />
-                    <Label fx:id="modalType" style="-fx-text-fill: white; -fx-font-size: 14px;" />
-                    <ScrollPane fitToWidth="true" prefHeight="150" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-                        <Label fx:id="modalOverview" style="-fx-text-fill: #CCCCCC; -fx-font-size: 14px;" wrapText="true" />
-                    </ScrollPane>
-                </VBox>
-            </HBox>
-            <HBox spacing="15" alignment="CENTER_RIGHT">
-                <Label fx:id="modalStatus" style="-fx-text-fill: #FFD54F;" />
-                <Button text="Fechar" onAction="#closeModal" styleClass="secondary-btn" />
-                <Button fx:id="modalAddBtn" text="Adicionar à Lista" styleClass="primary-btn" />
-            </HBox>
-        </VBox>
-    </StackPane>
+    <!-- Sub-views -->
+    <fx:include source="details.fxml" fx:id="details" />
 </StackPane>
