@@ -7,6 +7,7 @@ CREATE TABLE public.user_shows (
     tmdb_id TEXT NOT NULL,
     title TEXT NOT NULL,
     media_type TEXT NOT NULL,
+    poster_path TEXT,
     progress INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     UNIQUE(user_id, tmdb_id)

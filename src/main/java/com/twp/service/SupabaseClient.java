@@ -77,4 +77,40 @@ public class SupabaseClient {
         HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+    public boolean addShowToLibrary(String tmdbId, String title, String mediaType, String posterPath) throws Exception {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("user_id", Session.userId);
+        payload.put("tmdb_id", tmdbId);
+        payload.put("title", title);
+        payload.put("media_type", mediaType);
+        payload.put("poster_path", posterPath);
+        
+        String json = mapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + "/rest/v1/user_shows"))
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + Session.accessToken)
+                .header("Content-Type", "application/json")
+                .header("Prefer", "return=representation")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        // 201 Created
+        return response.statusCode() == 201;
+    }
+
+    public String getUserLibrary() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(SUPABASE_URL + "/rest/v1/user_shows?user_id=eq." + Session.userId + "&order=created_at.desc"))
+                .header("apikey", SUPABASE_KEY)
+                .header("Authorization", "Bearer " + Session.accessToken)
+                .GET()
+                .build();
+                
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
+    }
 }

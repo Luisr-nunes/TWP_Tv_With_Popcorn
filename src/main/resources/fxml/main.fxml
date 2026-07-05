@@ -3,20 +3,69 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.MainController" styleClass="main-background">
-    <top>
-        <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-background-color: #1E1E1E; -fx-padding: 15px;">
-            <Label text="TWP" styleClass="title" style="-fx-font-size: 24px;" />
-            <Region HBox.hgrow="ALWAYS" />
-            <TextField fx:id="searchField" promptText="Pesquisar série ou filme..." styleClass="input-field" prefWidth="300" />
-            <Button text="Buscar" onAction="#handleSearch" styleClass="primary-btn" />
-            <Button text="Sair" onAction="#handleLogout" styleClass="secondary-btn" />
-        </HBox>
-    </top>
-    <center>
-        <ScrollPane fitToWidth="true" style="-fx-background: #121212; -fx-border-color: #121212;">
-            <FlowPane fx:id="resultsPane" hgap="20" vgap="20" style="-fx-padding: 20px;" />
-        </ScrollPane>
-    </center>
-</BorderPane>
+<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.MainController" styleClass="main-background">
+    <!-- Main Content -->
+    <BorderPane>
+        <top>
+            <VBox style="-fx-background-color: #1E1E1E;">
+                <!-- Header -->
+                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 15px;">
+                    <Label text="TWP" styleClass="title" style="-fx-font-size: 24px;" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button text="Sair" onAction="#handleLogout" styleClass="secondary-btn" />
+                </HBox>
+                <!-- Tabs -->
+                <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 15px 15px 15px;">
+                    <Button text="Minha Biblioteca" onAction="#showLibraryTab" styleClass="tab-btn" fx:id="libraryTabBtn" />
+                    <Button text="Buscar" onAction="#showSearchTab" styleClass="tab-btn" fx:id="searchTabBtn" />
+                </HBox>
+            </VBox>
+        </top>
+
+        <center>
+            <StackPane>
+                <!-- Library Tab -->
+                <VBox fx:id="libraryTab" visible="true" style="-fx-padding: 20px;" spacing="15">
+                    <Label text="Suas Séries e Filmes Salvos" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" />
+                    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <FlowPane fx:id="libraryPane" hgap="20" vgap="20" />
+                    </ScrollPane>
+                </VBox>
+
+                <!-- Search Tab -->
+                <VBox fx:id="searchTab" visible="false" style="-fx-padding: 20px;" spacing="15">
+                    <HBox spacing="10">
+                        <TextField fx:id="searchField" promptText="Pesquisar série ou filme..." styleClass="input-field" prefWidth="400" />
+                        <Button text="Pesquisar" onAction="#handleSearch" styleClass="primary-btn" />
+                    </HBox>
+                    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <FlowPane fx:id="resultsPane" hgap="20" vgap="20" />
+                    </ScrollPane>
+                </VBox>
+            </StackPane>
+        </center>
+    </BorderPane>
+
+    <!-- Modal Pane (Hidden by default) -->
+    <StackPane fx:id="modalOverlay" visible="false" style="-fx-background-color: rgba(0,0,0,0.8);">
+        <VBox fx:id="modalBox" spacing="15" maxWidth="500" maxHeight="400" style="-fx-background-color: #1E1E1E; -fx-padding: 20px; -fx-background-radius: 8px;">
+            <HBox spacing="20">
+                <ImageView fx:id="modalPoster" fitWidth="150" fitHeight="225" preserveRatio="true" />
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label fx:id="modalTitle" style="-fx-text-fill: -fx-popcorn-yellow; -fx-font-size: 22px; -fx-font-weight: bold;" wrapText="true" />
+                    <Label fx:id="modalType" style="-fx-text-fill: white; -fx-font-size: 14px;" />
+                    <ScrollPane fitToWidth="true" prefHeight="150" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                        <Label fx:id="modalOverview" style="-fx-text-fill: #CCCCCC; -fx-font-size: 14px;" wrapText="true" />
+                    </ScrollPane>
+                </VBox>
+            </HBox>
+            <HBox spacing="15" alignment="CENTER_RIGHT">
+                <Label fx:id="modalStatus" style="-fx-text-fill: #FFD54F;" />
+                <Button text="Fechar" onAction="#closeModal" styleClass="secondary-btn" />
+                <Button fx:id="modalAddBtn" text="Adicionar à Lista" styleClass="primary-btn" />
+            </HBox>
+        </VBox>
+    </StackPane>
+</StackPane>

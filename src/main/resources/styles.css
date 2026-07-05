@@ -54,3 +54,32 @@
 .secondary-btn:hover {
     -fx-background-color: rgba(255, 255, 255, 0.1);
 }
+
+.tab-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #888888;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-width: 0 0 3px 0;
+    -fx-border-color: transparent;
+}
+.tab-btn:hover {
+    -fx-text-fill: -fx-popcorn-white;
+}
+.tab-btn-active {
+    -fx-text-fill: -fx-popcorn-yellow;
+    -fx-border-color: -fx-popcorn-yellow;
+}
+
+.card-hover:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 213, 79, 0.5), 10, 0, 0, 0);
+    -fx-cursor: hand;
+}
+
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
+}
+.scroll-pane {
+    -fx-background-color: transparent;
+}
