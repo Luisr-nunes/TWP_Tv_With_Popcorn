@@ -91,6 +91,8 @@ public class DetailsController {
         providersBox.getChildren().clear();
         seasonCombo.getItems().clear();
         episodesBox.getChildren().clear();
+        addBtn.setDisable(false);
+        wishlistBtn.setDisable(false);
 
         backdropImage.fitWidthProperty().bind(rootPane.widthProperty());
 
@@ -391,7 +393,13 @@ public class DetailsController {
                     addBtn.setText("Erro ao remover.");
                     addBtn.setDisable(false);
                 }
-            }, Platform::runLater);
+            }, Platform::runLater).exceptionally(e -> {
+                Platform.runLater(() -> {
+                    addBtn.setText("Erro na conexão");
+                    addBtn.setDisable(false);
+                });
+                return null;
+            });
         }
     }
     
