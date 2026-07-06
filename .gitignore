@@ -27,3 +27,4 @@ bin/
 
 # Environment Variables
 .env
+config.properties
