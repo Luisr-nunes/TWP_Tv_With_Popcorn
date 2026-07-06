@@ -13,7 +13,7 @@
   <br/>
   <br/>
   
-  <a href="https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn/releases/latest/download/TV_With_Popcorn_Release.zip">
+  <a href="https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn/releases/latest/download/TV_With_Popcorn-1.0.exe">
     <img src="https://img.shields.io/badge/Download_Grátis_para_Windows-100000?style=for-the-badge&logo=windows&logoColor=white&labelColor=0D0B14&color=F9004D" alt="Download TWP" />
   </a>
 </div>
@@ -37,14 +37,14 @@ O visual foi inspirado em plataformas de streaming premium (estilo Amazon Prime 
 
 ---
 
-## 🚀 Como Baixar e Usar (Versão Pronta)
+## 🚀 Como Baixar e Instalar (Versão Pronta)
 
 Se você não é desenvolvedor e apenas quer usar o aplicativo, o jeito mais fácil é fazer o download direto clicando no botão gigante no topo da página.
 
 1. Clique no botão **Download Grátis para Windows** lá em cima.
-2. Extraia o arquivo `TV_With_Popcorn_Release.zip` para uma pasta no seu computador.
-3. Execute o arquivo **`TV With Popcorn.exe`**. 
-   > *Nota: Você não precisa ter o Java instalado, pois esta versão já inclui o motor necessário embutido!*
+2. Execute o instalador `TV With Popcorn-1.0.exe`.
+3. Siga o passo a passo (Next > Next) e o aplicativo será instalado no seu Menu Iniciar e Área de Trabalho, pronto para usar!
+   > *Nota: Você não precisa ter o Java instalado na sua máquina, pois esta versão já inclui o motor necessário embutido!*
 
 ---
 
