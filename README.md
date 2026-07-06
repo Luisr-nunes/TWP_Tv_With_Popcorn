@@ -35,11 +35,7 @@ O visual foi inspirado em plataformas de streaming premium (estilo Amazon Prime 
 Se você não é desenvolvedor e apenas quer usar o aplicativo, o jeito mais fácil é fazer o download direto:
 
 <div align="center">
-<<<<<<< HEAD
   <a href="https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn/releases/latest/download/TV_With_Popcorn_Release.zip">
-=======
-  <a href="https://github.com/Luisr-nunes/twp-desktop/releases/latest/download/TV_With_Popcorn_Release.zip">
->>>>>>> 505108d0fcfbb386edceb87ef6fcb159c8ca8125
     <img src="https://img.shields.io/badge/Download_Grátis_para_Windows-100000?style=for-the-badge&logo=windows&logoColor=white&labelColor=0D0B14&color=F9004D" alt="Download TWP" />
   </a>
 </div>
