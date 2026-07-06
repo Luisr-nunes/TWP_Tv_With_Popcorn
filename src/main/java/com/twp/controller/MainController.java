@@ -32,6 +32,7 @@ public class MainController {
     @FXML private ScrollPane libraryScroll;
     @FXML private ScrollPane searchScroll;
     @FXML private ScrollPane settingsScroll;
+    @FXML private ScrollPane carouselScroll;
     @FXML private Label settingsEmailLabel;
     @FXML private Label importProgressLabel;
 
@@ -201,6 +202,32 @@ public class MainController {
     }
 
     @FXML
+    private void scrollCarouselLeft() {
+        if (carouselScroll == null) return;
+        double current = carouselScroll.getHvalue();
+        double newVal = Math.max(0, current - 0.3);
+        smoothScrollTo(newVal);
+    }
+
+    @FXML
+    private void scrollCarouselRight() {
+        if (carouselScroll == null) return;
+        double current = carouselScroll.getHvalue();
+        double max = carouselScroll.getHmax();
+        double newVal = Math.min(max, current + 0.3);
+        smoothScrollTo(newVal);
+    }
+
+    private void smoothScrollTo(double targetValue) {
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+            new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), 
+                new javafx.animation.KeyValue(carouselScroll.hvalueProperty(), targetValue, javafx.animation.Interpolator.EASE_BOTH)
+            )
+        );
+        timeline.play();
+    }
+
+    @FXML
     private void loadAnime() {
         setActiveTab(tabAnime);
         showHome();
@@ -214,6 +241,9 @@ public class MainController {
 
     private void fetchCategory(Fetcher fetcher, java.util.function.Predicate<JsonNode> filter) {
         recommendationsBox.getChildren().clear();
+        if (carouselScroll != null) {
+            carouselScroll.setHvalue(0.0); // Reset scroll position
+        }
         Label loading = new Label("Carregando...");
         loading.setStyle("-fx-text-fill: white;");
         recommendationsBox.getChildren().add(loading);
@@ -223,7 +253,7 @@ public class MainController {
         if (heroOverview != null) heroOverview.setText("");
         if (heroGenres != null) heroGenres.getChildren().clear();
         if (heroPane != null) {
-            heroPane.setStyle("-fx-background-color: #0F171E; -fx-background-radius: 20px;");
+            heroPane.setStyle("-fx-background-color: #0D0B14; -fx-background-radius: 20px;");
         }
 
         AsyncManager.runAsync(fetcher::fetch)

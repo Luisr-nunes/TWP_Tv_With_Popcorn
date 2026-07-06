@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.shape.Circle?>
+
+<StackPane fx:id="rootPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twp.controller.DetailsController" visible="false" style="-fx-background-color: #0A0A0C;">
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+        <VBox style="-fx-background-color: #0A0A0C;">
+            
+            <!-- Hero Banner Section -->
+            <StackPane alignment="BOTTOM_CENTER">
+                <ImageView fx:id="backdropImage" fitHeight="600" preserveRatio="false" />
+                <VBox alignment="CENTER" spacing="10" style="-fx-background-color: linear-gradient(to top, #0A0A0C 0%, transparent 100%); -fx-padding: 200px 50px 30px 50px;">
+                    <Label fx:id="titleLabel" style="-fx-text-fill: white; -fx-font-size: 64px; -fx-font-weight: bold; -fx-alignment: center;" wrapText="true" maxWidth="900" textAlignment="CENTER" />
+                    <Label fx:id="metaLabel" style="-fx-text-fill: #CCCCCC; -fx-font-size: 18px;" />
+                </VBox>
+            </StackPane>
+
+            <!-- Info Section (Poster, Directed By, Overview, Genres, Rating) -->
+            <HBox spacing="50" style="-fx-padding: 0 50px 50px 50px;" alignment="TOP_CENTER">
+                <!-- Left: Poster -->
+                <ImageView fx:id="posterImage" fitWidth="220" fitHeight="330" preserveRatio="true" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.9), 20, 0, 0, 0);" />
+                
+                <!-- Middle: Info -->
+                <VBox spacing="15" HBox.hgrow="ALWAYS" maxWidth="700">
+                    <Label fx:id="directedByLabel" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" />
+                    <Label fx:id="overviewLabel" style="-fx-text-fill: #DDDDDD; -fx-font-size: 16px; -fx-line-spacing: 6px;" wrapText="true" />
+                    <HBox fx:id="genresBox" spacing="10" />
+                    
+                    <HBox spacing="10" style="-fx-padding: 20px 0 0 0;">
+                        <Button fx:id="addBtn" text="Assistindo" onAction="#handleAddWatching" styleClass="primary-btn" prefHeight="45" />
+                        <Button fx:id="wishlistBtn" text="Quero Assistir" onAction="#handleAddWishlist" styleClass="glass-btn" prefHeight="45" />
+                        <Button text="Voltar" onAction="#handleBack" styleClass="secondary-btn" prefHeight="45" />
+                    </HBox>
+                </VBox>
+
+                <!-- Right: Rating -->
+                <StackPane prefWidth="120" prefHeight="120" alignment="CENTER">
+                    <Circle radius="50" styleClass="rating-circle" />
+                    <Label fx:id="ratingLabel" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;" />
+                </StackPane>
+            </HBox>
+
+            <!-- Gallery Section -->
+            <VBox alignment="CENTER" spacing="20" style="-fx-padding: 0 50px 50px 50px;">
+                <Label text="G A L E R I A" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-letter-spacing: 5px;" />
+                <TilePane fx:id="galleryPane" hgap="15" vgap="15" alignment="CENTER" prefColumns="3" />
+            </VBox>
+
+            <!-- Episodes Tracking Section (Only for TV in Library) -->
+            <VBox fx:id="episodesSection" alignment="CENTER" spacing="20" style="-fx-padding: 0 50px 50px 50px;" visible="false" managed="false">
+                <Label text="Meus Episódios" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;" />
+                <ComboBox fx:id="seasonCombo" styleClass="input-field" prefWidth="300" />
+                <VBox fx:id="episodesBox" spacing="10" alignment="CENTER_LEFT" maxWidth="800" style="-fx-background-color: #151518; -fx-padding: 20px; -fx-background-radius: 12px;" />
+            </VBox>
+
+            <!-- Rating Section (Only in Library) -->
+            <VBox fx:id="ratingSection" alignment="CENTER" spacing="15" style="-fx-padding: 0 50px 50px 50px;" visible="false" managed="false">
+                <Label text="Minha Avaliação" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;" />
+                <HBox fx:id="starsBox" spacing="10" alignment="CENTER" />
+            </VBox>
+
+            <!-- Footer Section -->
+            <HBox spacing="50" style="-fx-padding: 50px; -fx-background-color: #121215;">
+                <VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="300">
+                    <Label text="Elenco Principal" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" />
+                    <VBox fx:id="castBox" spacing="8" />
+                </VBox>
+                
+                <VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="300">
+                    <Label text="Onde Assistir" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" />
+                    <HBox fx:id="providersBox" spacing="15" />
+                </VBox>
+            </HBox>
+            
+        </VBox>
+    </ScrollPane>
+</StackPane>

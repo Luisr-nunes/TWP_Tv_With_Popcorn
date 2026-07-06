@@ -1,0 +1,12 @@
+com\twp\controller\AuthController.class
+com\twp\service\SupabaseClient.class
+com\twp\Launcher.class
+com\twp\util\AsyncManager.class
+com\twp\util\EnvConfig.class
+com\twp\controller\MainController$Fetcher.class
+com\twp\controller\DetailsController.class
+com\twp\util\Session.class
+com\twp\controller\MainController.class
+com\twp\service\TvTimeImporter.class
+com\twp\App.class
+com\twp\service\TmdbClient.class
