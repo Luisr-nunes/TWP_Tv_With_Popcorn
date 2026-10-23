@@ -1,97 +1,104 @@
 <div align="center">
-  <img src="src/main/resources/icon.png" alt="TV With Popcorn Logo" width="150"/>
 
-  # TV With Popcorn (TWP) 🍿
-  
-  **O seu gerenciador definitivo de Filmes e Séries.**
-  
-  [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
-  [![JavaFX](https://img.shields.io/badge/JavaFX-21-blue.svg)](https://openjfx.io/)
-  [![Maven](https://img.shields.io/badge/Maven-Build-red.svg)](https://maven.apache.org/)
-  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-  
-  <br/>
-  <br/>
-  
-  <a href="https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn/releases/latest/download/TV_With_Popcorn_Installer.exe">
-    <img src="https://img.shields.io/badge/Download_Grátis_para_Windows-100000?style=for-the-badge&logo=windows&logoColor=white&labelColor=0D0B14&color=F9004D" alt="Download TWP" />
-  </a>
+<img src="src/main/resources/icon.png" alt="Logo TV With Popcorn" width="150"/>
+
+# TV With Popcorn (TWP)
+
+<!-- badges -->
+![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white) ![JavaFX](https://img.shields.io/badge/JavaFX-ED8B00?style=flat-square&logo=openjdk&logoColor=white) ![Maven](https://img.shields.io/badge/Maven-C71A36?style=flat-square&logo=apachemaven&logoColor=white) ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-663399?style=flat-square&logo=css&logoColor=white)
+
+[Read in English](README.en.md)
+
+Aplicativo desktop em JavaFX para acompanhar filmes, séries e animes, criado como alternativa ao TV Time.
+
+[Baixar o instalador para Windows](https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn/releases/latest/download/TV_With_Popcorn_Installer.exe)
+
 </div>
 
-<br/>
+## Sobre
 
-**TV With Popcorn (TWP)** é uma aplicação Desktop moderna, elegante e de alto desempenho desenvolvida em JavaFX. Criada para substituir a necessidade de depender de plataformas de terceiros (como o TV Time), o TWP permite que você pesquise, gerencie e salve seu progresso nas suas séries, animes e filmes favoritos.
+O TWP permite pesquisar títulos, montar uma biblioteca pessoal e registrar o progresso de cada série, com conta própria sincronizada na nuvem. O visual segue plataformas de streaming, com a paleta Aurora Night (roxo escuro e destaques em magenta).
 
-O visual foi inspirado em plataformas de streaming premium (estilo Amazon Prime / HBO Max), utilizando a paleta *Aurora Night* (foco em imersão com tons de Roxo Espacial e botões brilhantes em Magenta).
+## Funcionalidades
 
----
+- Catálogo de filmes, séries e animes em alta e busca por título, via API do TMDB (em português).
+- Cadastro e login de usuários com Supabase Auth.
+- Biblioteca pessoal com status Para assistir, Assistindo e Finalizado, e progresso por episódio (por exemplo, S01E05).
+- Estatísticas de quanto tempo você já passou assistindo.
+- Importação do histórico do TV Time a partir da exportação de dados (GDPR): basta selecionar a pasta extraída, que contém `tracking-prod-records-v2.csv`.
+- Interface com efeito de vidro, carrossel animado e transições entre painéis.
 
-## ✨ Funcionalidades Principais
+## Tecnologias
 
-* 🎬 **Exploração de Catálogo**: Navegue pelos Filmes, Séries e Animes que estão "Em Alta", com integração direta à API do TMDB.
-* 🍿 **Sistema de Busca**: Encontre qualquer produção rapidamente através da barra de pesquisa interativa.
-* 📚 **Biblioteca Pessoal**: Gerencie seus títulos salvos (Para Assistir, Assistindo, Finalizado) e acompanhe seu progresso de episódios (ex: S01E05).
-* ⏱️ **Estatísticas de Tempo**: O app calcula automaticamente quantas horas/dias da sua vida você já gastou assistindo séries e filmes!
-* 🔄 **Migração de Dados (TV Time)**: Possui uma ferramenta de importação robusta para você extrair seus dados do `gdpr-data.zip` (backup do TV Time) e migrar todo o seu histórico com um único clique.
-* 🎨 **Design Imersivo**: Glassmorphism, carrossel com deslizamento suave (Timelines do JavaFX) e transições visuais dinâmicas nos painéis principais.
+| Camada | Tecnologia |
+| --- | --- |
+| Linguagem | Java 17 |
+| Interface | JavaFX 21 com FXML e CSS |
+| Dados | Supabase (Auth e REST sobre PostgreSQL, com Row Level Security) |
+| Catálogo | API do TMDB |
+| JSON | Jackson |
+| Build e instalador | Maven (wrapper incluído), maven-shade-plugin, jpackage e WiX |
 
----
+## Estrutura
 
-## 🚀 Como Baixar e Instalar (Versão Pronta)
+```
+TWP_Tv_With_Popcorn/
+├── src/main/java/com/twp/
+│   ├── App.java, Launcher.java
+│   ├── controller/      # AuthController, MainController, DetailsController
+│   ├── service/         # SupabaseClient, TmdbClient, TvTimeImporter
+│   └── util/            # AsyncManager, EnvConfig, Session
+├── src/main/resources/  # telas FXML, styles.css e ícones
+├── supabase_schema.sql  # tabela user_shows e políticas de acesso
+└── TODO.md              # bugs conhecidos
+```
 
-Se você não é desenvolvedor e apenas quer usar o aplicativo, o jeito mais fácil é fazer o download direto clicando no botão gigante no topo da página.
+## Instalação (usuário)
 
-1. Clique no botão **Download Grátis para Windows** lá em cima.
-2. Execute o instalador `TV_With_Popcorn_Installer.exe`.
-3. Siga o passo a passo (Next > Next) e o aplicativo será instalado no seu Menu Iniciar e Área de Trabalho, pronto para usar!
-   > *Nota: Você não precisa ter o Java instalado na sua máquina, pois esta versão já inclui o motor necessário embutido!*
+1. Baixe o instalador pelo link acima e execute `TV_With_Popcorn_Installer.exe`.
+2. Siga o assistente; o atalho aparece no Menu Iniciar e na Área de Trabalho.
 
----
+O instalador já inclui o Java, então não é preciso instalar nada antes. Disponível apenas para Windows.
 
-## 🛠️ Como Desenvolver e Compilar (Para Devs)
+## Como executar (desenvolvimento)
 
-### Pré-requisitos
-- **Java 17** (JDK) ou superior.
-- **Maven** (O projeto já inclui o `mvnw` - Maven Wrapper).
-- Uma chave de API gratuita do **TMDB**.
+Pré-requisitos: JDK 17+, uma chave da API do TMDB e um projeto no Supabase.
 
-### Passos para rodar localmente
-
-1. Clone o repositório:
 ```bash
-git clone https://github.com/SeuUsuario/twp-desktop.git
-cd twp-desktop
+git clone https://github.com/Luisr-nunes/TWP_Tv_With_Popcorn.git
+cd TWP_Tv_With_Popcorn
 ```
 
-2. Crie o arquivo de variáveis de ambiente:
-Crie um arquivo `.env` na raiz do projeto e adicione sua chave do TMDB:
-```env
-TMDB_API_KEY=sua_chave_aqui
-```
+1. Crie as tabelas no Supabase executando `supabase_schema.sql` no SQL Editor.
+2. Crie o arquivo `src/main/resources/config.properties` (já ignorado pelo Git):
 
-3. Execute o projeto usando o Maven Wrapper:
+   ```properties
+   TMDB_API_TOKEN=seu_token_de_leitura_do_tmdb
+   SUPABASE_URL=https://seu-projeto.supabase.co
+   SUPABASE_KEY=sua_chave_anon
+   ```
+
+3. Rode:
+
+   ```bash
+   ./mvnw clean javafx:run      # Linux/macOS
+   mvnw.cmd clean javafx:run    # Windows
+   ```
+
+## Gerar o executável
+
 ```bash
-.\mvnw clean javafx:run
+./mvnw clean package
+jpackage --type app-image --name "TV With Popcorn" --input target/ \
+  --main-jar twp-desktop-1.0-SNAPSHOT-shaded.jar --main-class com.twp.Launcher --dest build
 ```
 
-### Como gerar o seu próprio `.exe` (Empacotamento)
-Utilize o `jpackage` para gerar uma versão Standalone da aplicação:
-```bash
-# 1. Crie o arquivo fat jar usando o maven-shade-plugin
-.\mvnw clean package
+O executável fica em `build/TV With Popcorn/`. O `config.properties` é empacotado junto, então o token do TMDB e a chave anon do Supabase vão dentro do instalador.
 
-# 2. Gere o build com o jpackage
-jpackage --type app-image --name "TV With Popcorn" --input target/ --main-jar twp-desktop-1.0-SNAPSHOT-shaded.jar --main-class com.twp.Launcher --dest build
-```
-O executável estará na pasta `build/TV With Popcorn/`.
+## Bugs conhecidos
 
----
+- O sistema de avaliação por estrelas ainda não registra nem exibe as notas corretamente (ver [TODO.md](TODO.md)).
 
-## 🤝 Contribuindo
+## Autor
 
-Sinta-se livre para abrir **Issues** relatando bugs ou sugerindo novas funcionalidades, ou envie um **Pull Request** se quiser melhorar o código!
-
-<div align="center">
-  <br/>
-  Feito com 🍿 e ☕.
-</div>
+Luís Nunes — [GitHub](https://github.com/Luisr-nunes) · [LinkedIn](https://www.linkedin.com/in/luis-nunes-dev/)
